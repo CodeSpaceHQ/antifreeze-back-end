@@ -13,7 +13,13 @@ This section contains instructions for setting up and using the development envi
 - Go 1.9.3
 - Go Dep 0.4.1
 - JRE 6.x or newer
-- [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html)
+- [DynamoDB Local]
+  -- Follow this link: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html
+  -- Download the .jar file for US West
+  -- Extract the contents to where you want them
+  -- Open cmd prompt, navigate to where you stored the file and run the following command to start it up:
+      java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar -sharedDb
+  -- Note: It uses port 8000 by default and processes incoming requests until you stop it with Ctrl+C
 - Postman
 - Git
 
