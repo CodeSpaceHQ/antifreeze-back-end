@@ -10,13 +10,15 @@ This section contains instructions for setting up and using the development envi
 - Node.js 8.9.4
 - NPM 5.6.0
 - Serverless framework 1.26 (global install)
-  -- Type "npm install -g serverless" without quotes into your command line
-  -- Check to make sure it installed correctly by running "serverless --version"
+  -- Type "npm install -g serverless" into your command line
+  -- Check by running "serverless --version"
 - Go 1.9.3
+  -- Follow: https://golang.org/dl/ and test your installation
 - Go Dep 0.4.1
+  -- Follow: https://github.com/golang/dep/releases
 - JRE 6.x or newer
 - [DynamoDB Local]
-  -- Follow this link: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html
+  -- Follow: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html
   -- Download the .jar file for US West
   -- Extract the contents to where you want them
   -- Open cmd prompt, navigate to where you stored the file and run the following command to start it up:
