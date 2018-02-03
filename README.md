@@ -13,7 +13,6 @@ This section contains instructions for setting up and using the development envi
   -- Type "npm install -g serverless" without quotes into your command line
   -- Check to make sure it installed correctly by running "serverless --version"
 - Go 1.9.3
-  -- follow this: https://golang.org/dl/
 - Go Dep 0.4.1
 - JRE 6.x or newer
 - [DynamoDB Local]
