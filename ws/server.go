@@ -1,16 +1,22 @@
 package ws
 
 type Server struct {
-	// by device id
-	deviceToUser map[int]*User
-	register     chan *User
-	unregister   chan *User
+	// by deviceId to email
+	deviceToUser map[int]string
+	// by email to all connected user clients
+	// when updating, send to all of these
+	emailToUsers map[string][]*user
+	register     chan *user
+	unregister   chan *user
 }
 
-func newServer() *Server {
+// TODO: get users from db on init?
+
+func NewServer() *Server {
 	return &Server{
-		deviceToUser: make(map[int]*User),
-		register:     make(chan *User),
-		unregister:   make(chan *User),
+		deviceToUser: make(map[int]*user),
+		emailToUsers: make(map[string][]*user),
+		register:     make(chan *user),
+		unregister:   make(chan *user),
 	}
 }

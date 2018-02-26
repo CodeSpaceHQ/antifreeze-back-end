@@ -7,10 +7,11 @@ import (
 
 // TODO(NilsG-S): could permissions and subscriptions be their own structs?
 
-type User struct {
-	email    string
-	isAuthed bool
+type user struct {
+	email string
 	// Could potentially make this a set...
-	permissions   map[string]bool
+	permissions map[string]bool
+	// used to decide whether to send information
+	// technically not necessay under the current proposal
 	subscriptions map[string]bool
 }
