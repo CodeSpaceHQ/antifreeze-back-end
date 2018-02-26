@@ -10,9 +10,9 @@ type Server struct {
 	unregister   chan *user
 }
 
-// TODO: get users from db on init?
-
 func NewServer() *Server {
+	// TODO: get users from db on init?
+
 	return &Server{
 		deviceToUser: make(map[int]*user),
 		emailToUsers: make(map[string]map[*user]bool),
@@ -22,6 +22,7 @@ func NewServer() *Server {
 }
 
 func (v *Server) Run() {
+	// Can't use two goroutines because `map` isn't thread safe
 	for {
 		select {
 		case user := <-v.register:
@@ -39,18 +40,11 @@ func (v *Server) Run() {
 	}
 }
 
-func (v *Server) register(user *user) error {
-	if v.emailToUsers[user.email] == nil {
-		v.emailToUsers[user.email] = make(map[*user]bool)
-	}
+func (s *Server) POSTDeviceHistory(mes temp) {
+	email := s.deviceToUser[mes.deviceId]
 
-	v.emailToUsers[user.email][user] = true
-}
-
-func (v *Server) unregister(user *user) error {
-	if _, ok := v.emailToUsers[user.email][user]; ok {
-		delete(v.emailToUsers[user.email], user)
-		close(user.send)
+	for k, _ := range s.emailToUsers[email] {
+		k.send <- mes
 	}
 }
 

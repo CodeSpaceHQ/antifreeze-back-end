@@ -20,20 +20,20 @@ const (
 	}
 )
 
-type subs struct {
-	userDevices   bool
-	devicesAlarm  bool
-	deviceHistory bool
-}
+// type subs struct {
+// 	userDevices   bool
+// 	devicesAlarm  bool
+// 	deviceHistory bool
+// }
 
 type user struct {
 	email string
 	perms map[string]bool
 	// used to decide whether to send information
 	// technically not necessay under the current proposal
-	subs map[string]bool
+	// subs map[string]bool
 	conn *websocket.Conn
-	send chan []byte
+	send chan []message
 }
 
 // ensures a given user has the right permissions
