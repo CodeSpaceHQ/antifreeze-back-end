@@ -43,6 +43,8 @@ Instructions pending...
 
 # WebSocket
 
+Requires a mapping from devices to clients, i.e. `map[deviceId]*Client`.
+
 ## Connection:
 
 - email
@@ -111,7 +113,7 @@ Get all devices (for setup).
 
 #### POST
 
-- Create a new device.
+- Adding a device to a user.
 - Requires a WebSocket push to `/user/device` subscribers.
 
 #### DELETE
