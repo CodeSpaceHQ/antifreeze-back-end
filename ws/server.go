@@ -1,5 +1,29 @@
 package ws
 
+import (
+	"github.com/gorilla/websocket"
+	"log"
+	"net/http"
+	"time"
+)
+
+const (
+	writeWait  = 10 * time.Second
+	pongWait   = 60 * time.Second
+	pingPeriod = (pongWait * 9) / 10
+	// TODO: This might not be relevant for JSON
+	maxMessageSize = 512
+)
+
+var (
+	newline  = []byte{'\n'}
+	space    = []byte{' '}
+	upgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
+)
+
 type Server struct {
 	// by deviceId to email
 	deviceToUser map[int]string
@@ -31,10 +55,6 @@ func (v *Server) RunServer() {
 			}
 
 			v.emailToUsers[user.email][user] = true
-
-			// Start executing websocket read
-			go user.writeUser()
-			go user.readUser()
 		case user := <-v.unregister:
 			if _, ok := v.emailToUsers[user.email][user]; ok {
 				delete(v.emailToUsers[user.email], user)
@@ -44,7 +64,34 @@ func (v *Server) RunServer() {
 	}
 }
 
-// Functions to register new users
+func (s *Server) Register(w http.ResponseWriter, r http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	// TODO: could this be done in a single place?
+	err = r.ParseForm()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	// TODO: ensure this value retrieval works
+	user := &user{
+		email: r.FormValue("email"),
+		perms: unauthed,
+		conn:  conn,
+		send:  make(chan []mes, 256),
+	}
+
+	s.register <- user
+
+	// Start executing websocket read
+	go user.writeUser()
+	go user.readUser()
+}
 
 func (s *Server) POSTDeviceHistory(mes temp) {
 	email := s.deviceToUser[mes.deviceId]
