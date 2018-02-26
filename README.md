@@ -63,6 +63,8 @@ Instructions pending...
 
 ### /user/devices
 
+Make sure to update the front-end before doing server logic (to avoid situations where the front-end hasn't been setup to handle temp/alarm updates for a specific device). But then the server would have to remove the new device if something goes wrong.
+
 - deviceId
 
 #### ADD
@@ -74,9 +76,9 @@ Instructions pending...
 
 #### UPDATE
 
-- temp
+Allow for `nil` values
 
-#### REMOVE
+- temp
 
 ### /device/history
 
@@ -91,36 +93,63 @@ Instructions pending...
 
 ## Endpoint
 
+Many of these should send updates to certain WebSockets
+
 ### /user
 
 For creating users
 
-POST
+#### POST
 
 ### /user/devices
 
-For adding devices to a user
+For managing a user's devices.
 
 #### GET
+
+Get all devices (for setup).
+
 #### POST
 
-Updates name for device in database
-
-- name
+- Create a new device.
+- Requires a WebSocket push to `/user/device` subscribers.
 
 #### DELETE
 
+- Delete a device.
+- Requires a WebSocket push to `/user/device` subscribers.
+
 ### /device
 
-For adding devices to the database
+#### POST
 
-POST
+- For adding devices to the database.
+
+#### PUT
+
+- For updating the name in the database.
+
+```json
+{
+    "name": "string"
+}
+```
 
 ### /device/alarm
 
-PUT
-DELETE
+#### PUT
+
+- Allow for `nil` values.
+- Requires a WebSocket push to `/device/alarm` subscribers.
 
 ### /device/history
 
-POST
+#### GET
+
+- deviceId
+
+This endpoint gets all history for a single device
+
+#### POST
+
+- Requires a WebSocket push to `/device/history` subscribers.
