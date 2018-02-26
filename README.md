@@ -40,3 +40,87 @@ PASSWORD=test
 ### Test Changes
 
 Instructions pending...
+
+# WebSocket
+
+## Connection:
+
+- email
+- isAuthed
+- permissions
+- subsriptions
+
+## Message
+
+```json
+{
+    "subsription": "string",
+    "operation": "ADD/REMOVE/UPDATE"
+}
+```
+
+## Path
+
+### /user/devices
+
+- deviceId
+
+#### ADD
+#### REMOVE
+
+### /device/alarm
+
+- deviceId
+
+#### UPDATE
+
+- temp
+
+#### REMOVE
+
+### /device/history
+
+- deviceId
+
+#### ADD
+
+- temp
+- time
+
+# REST
+
+## Endpoint
+
+### /user
+
+For creating users
+
+POST
+
+### /user/devices
+
+For adding devices to a user
+
+#### GET
+#### POST
+
+Updates name for device in database
+
+- name
+
+#### DELETE
+
+### /device
+
+For adding devices to the database
+
+POST
+
+### /device/alarm
+
+PUT
+DELETE
+
+### /device/history
+
+POST
