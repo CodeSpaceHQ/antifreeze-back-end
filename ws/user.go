@@ -36,6 +36,29 @@ type user struct {
 	send chan []message
 }
 
+func (u *user) writeUser() {
+	// TODO: convert this to use JSON
+	for {
+		mes, ok := <-u.send
+
+		// If someone has unregistered this user (which closes the channel)
+		if !ok {
+			return
+		}
+
+		w, err := u.conn.NextWriter(websocket.TextMessage)
+		if err != nil {
+			return
+		}
+		w.Write(mes)
+	}
+}
+
+func (u *user) readUser() {
+	// unregister if the user disconnects
+	return
+}
+
 // ensures a given user has the right permissions
 func (v *user) checkAuth(req *perms) bool {
 	// TODO: do stuff

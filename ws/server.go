@@ -21,7 +21,7 @@ func NewServer() *Server {
 	}
 }
 
-func (v *Server) Run() {
+func (v *Server) RunServer() {
 	// Can't use two goroutines because `map` isn't thread safe
 	for {
 		select {
@@ -31,6 +31,10 @@ func (v *Server) Run() {
 			}
 
 			v.emailToUsers[user.email][user] = true
+
+			// Start executing websocket read
+			go user.writeUser()
+			go user.readUser()
 		case user := <-v.unregister:
 			if _, ok := v.emailToUsers[user.email][user]; ok {
 				delete(v.emailToUsers[user.email], user)
@@ -39,6 +43,8 @@ func (v *Server) Run() {
 		}
 	}
 }
+
+// Functions to register new users
 
 func (s *Server) POSTDeviceHistory(mes temp) {
 	email := s.deviceToUser[mes.deviceId]
