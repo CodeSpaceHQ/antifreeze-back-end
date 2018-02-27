@@ -2,6 +2,7 @@
 package ws
 
 import (
+	"log"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -31,8 +32,9 @@ var (
 // }
 
 type user struct {
-	email string
-	perms *perms
+	server *Server
+	email  string
+	perms  *perms
 	// used to decide whether to send information
 	// technically not necessay under the current proposal
 	// subs map[string]bool
@@ -80,6 +82,29 @@ func (u *user) writeUser() {
 // TODO: will these ever need to send to other users?
 func (u *user) readUser() {
 	// unregister if the user disconnects
+	defer func() {
+		u.server.unregister <- u
+		u.conn.Close()
+	}()
+
+	u.conn.SetReadLimit(maxMessageSize)
+	u.conn.SetReadDeadline(time.Now().Add(pongWait))
+	u.conn.SetPongHandler(func(string) error { u.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+
+	for {
+		_, mes, err := u.conn.ReadMessage()
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Printf("error: %v", err)
+			}
+
+			break
+		}
+
+		// TODO: Make this applicable stuff other than Auth
+		log.Println(mes)
+	}
+
 	return
 }
 

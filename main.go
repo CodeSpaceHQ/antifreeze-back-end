@@ -28,6 +28,14 @@ func main() {
 		server.Register(w, r)
 	})
 
+	http.HandleFunc("/user/devices", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			// TODO: This is a stopgap
+			server.POSTUserDevices(1, "test@ttu.edu")
+		}
+	})
+
 	http.HandleFunc("/device/history", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:

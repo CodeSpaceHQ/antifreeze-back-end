@@ -74,9 +74,10 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: ensure this value retrieval works
 	user := &user{
-		email: r.FormValue("email"),
+		server: s,
+		// TODO: This is a stopgap. Replace with authentication
+		email: "test@ttu.edu",
 		perms: unauthed,
 		conn:  conn,
 		// channel of length 256
@@ -100,6 +101,10 @@ func (s *Server) POSTDeviceHistory(mes common.Temperature) {
 	for k, _ := range s.emailToUsers[email] {
 		k.send <- mes
 	}
+}
+
+func (s *Server) POSTUserDevices(id int, email string) {
+	s.deviceToUser[id] = email
 }
 
 // Add functions to inject temperatures, devices, etc. into the server.
