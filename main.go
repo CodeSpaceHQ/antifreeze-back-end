@@ -2,22 +2,37 @@
 package main
 
 import (
-	// "net/http"
-	"fmt"
+	"flag"
+	"log"
+	"net/http"
+
+	"github.com/NilsG-S/antifreeze-back-end/ws"
 )
 
+var addr = flag.String("addr", ":8080", "http service address")
+
 func main() {
-	// http.HandleFunc("/ws")
+	server := ws.NewServer()
+	go server.RunServer()
 
-	var test []string
-	fmt.Println(test == nil)
-	test = append(test, "stuff")
-	fmt.Println(test == nil)
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			server.Register(w, r)
+		}
+	})
 
-	var test2 map[int]string
-	fmt.Println(test2 == nil)
-	test2 = make(map[int]string)
-	fmt.Println(test2 == nil)
+	http.HandleFunc("/device/history", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			server.POSTDeviceHistory(w, r)
+		}
+	})
+
+	err := http.ListenAndServe(*addr, nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
 
 	return
 }

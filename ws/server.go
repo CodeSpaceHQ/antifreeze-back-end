@@ -71,19 +71,13 @@ func (s *Server) Register(w http.ResponseWriter, r http.Request) {
 		return
 	}
 
-	// TODO: could this be done in a single place?
-	err = r.ParseForm()
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
 	// TODO: ensure this value retrieval works
 	user := &user{
 		email: r.FormValue("email"),
 		perms: unauthed,
 		conn:  conn,
-		send:  make(chan []mes, 256),
+		// channel of length 256
+		send: make(chan []mes, 256),
 	}
 
 	s.register <- user
@@ -93,8 +87,12 @@ func (s *Server) Register(w http.ResponseWriter, r http.Request) {
 	go user.readUser()
 }
 
-func (s *Server) POSTDeviceHistory(mes temp) {
-	email := s.deviceToUser[mes.deviceId]
+func (s *Server) POSTDeviceHistory(w http.ResponseWriter, r http.Request) {
+	id := r.FormValue("deviceId")
+	email, ok := s.deviceToUser[id]
+	if !ok {
+		return
+	}
 
 	for k, _ := range s.emailToUsers[email] {
 		k.send <- mes
