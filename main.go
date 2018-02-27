@@ -5,7 +5,9 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"time"
 
+	"github.com/NilsG-S/antifreeze-back-end/common"
 	"github.com/NilsG-S/antifreeze-back-end/ws"
 )
 
@@ -25,7 +27,15 @@ func main() {
 	http.HandleFunc("/device/history", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
-			server.POSTDeviceHistory(w, r)
+			mes := common.Temperature{
+				Sub:      "/device/history",
+				Op:       common.Add,
+				DeviceID: 1,
+				Temp:     32,
+				Time:     time.Now(),
+			}
+
+			server.POSTDeviceHistory(mes)
 		}
 	})
 
