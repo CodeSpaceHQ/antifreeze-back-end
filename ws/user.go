@@ -2,6 +2,8 @@
 package ws
 
 import (
+	"time"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -38,22 +40,43 @@ type user struct {
 
 func (u *user) writeUser() {
 	// TODO: convert this to use JSON
+	ticker := time.NewTicker(pingPeriod)
+
+	defer func() {
+		ticker.Stop()
+		u.conn.Close()
+	}()
+
 	for {
-		mes, ok := <-u.send
+		select {
+		case mes, ok := <-u.send:
+			u.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			// If someone has unregistered this user (which closes the channel)
+			if !ok {
+				u.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				return
+			}
 
-		// If someone has unregistered this user (which closes the channel)
-		if !ok {
-			return
-		}
+			w, err := u.conn.NextWriter(websocket.TextMessage)
+			if err != nil {
+				return
+			}
+			//w.Write(mes)
+			w.Write("Test")
 
-		w, err := u.conn.NextWriter(websocket.TextMessage)
-		if err != nil {
-			return
+			if err := w.Close(); err != nil {
+				return
+			}
+		case <-ticker.C:
+			u.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			if err := u.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				return
+			}
 		}
-		w.Write(mes)
 	}
 }
 
+// TODO: will these ever need to send to other users?
 func (u *user) readUser() {
 	// unregister if the user disconnects
 	return

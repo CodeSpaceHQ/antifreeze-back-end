@@ -95,7 +95,13 @@ func (s *Server) POSTDeviceHistory(w http.ResponseWriter, r http.Request) {
 	}
 
 	for k, _ := range s.emailToUsers[email] {
-		k.send <- mes
+		k.send <- &temp{
+			sub:      "/device/history",
+			op:       add,
+			deviceId: id,
+			temp:     r.FormValue("temp"),
+			time:     r.FormValue("time"),
+		}
 	}
 }
 
