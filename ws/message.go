@@ -25,5 +25,5 @@ type temp struct {
 	time     time.Time
 }
 
-func (v *temp) getSub() string { return v.sub }
-func (v *temp) getOp() int     { return v.op }
+func (v temp) getSub() string { return v.sub }
+func (v temp) getOp() int     { return v.op }

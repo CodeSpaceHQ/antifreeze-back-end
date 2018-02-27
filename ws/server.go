@@ -38,33 +38,33 @@ func NewServer() *Server {
 	// TODO: get users from db on init?
 
 	return &Server{
-		deviceToUser: make(map[int]*user),
+		deviceToUser: make(map[int]string),
 		emailToUsers: make(map[string]map[*user]bool),
 		register:     make(chan *user),
 		unregister:   make(chan *user),
 	}
 }
 
-func (v *Server) RunServer() {
+func (s *Server) RunServer() {
 	// Can't use two goroutines because `map` isn't thread safe
 	for {
 		select {
-		case user := <-v.register:
-			if v.emailToUsers[user.email] == nil {
-				v.emailToUsers[user.email] = make(map[*user]bool)
+		case u := <-s.register:
+			if s.emailToUsers[u.email] == nil {
+				s.emailToUsers[u.email] = make(map[*user]bool)
 			}
 
-			v.emailToUsers[user.email][user] = true
-		case user := <-v.unregister:
-			if _, ok := v.emailToUsers[user.email][user]; ok {
-				delete(v.emailToUsers[user.email], user)
+			s.emailToUsers[u.email][u] = true
+		case user := <-s.unregister:
+			if _, ok := s.emailToUsers[user.email][user]; ok {
+				delete(s.emailToUsers[user.email], user)
 				close(user.send)
 			}
 		}
 	}
 }
 
-func (s *Server) Register(w http.ResponseWriter, r http.Request) {
+func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -77,7 +77,7 @@ func (s *Server) Register(w http.ResponseWriter, r http.Request) {
 		perms: unauthed,
 		conn:  conn,
 		// channel of length 256
-		send: make(chan []mes, 256),
+		send: make(chan message, 256),
 	}
 
 	s.register <- user
@@ -87,21 +87,15 @@ func (s *Server) Register(w http.ResponseWriter, r http.Request) {
 	go user.readUser()
 }
 
-func (s *Server) POSTDeviceHistory(w http.ResponseWriter, r http.Request) {
-	id := r.FormValue("deviceId")
+func (s *Server) POSTDeviceHistory(mes temp) {
+	id := mes.deviceId
 	email, ok := s.deviceToUser[id]
 	if !ok {
 		return
 	}
 
 	for k, _ := range s.emailToUsers[email] {
-		k.send <- &temp{
-			sub:      "/device/history",
-			op:       add,
-			deviceId: id,
-			temp:     r.FormValue("temp"),
-			time:     r.FormValue("time"),
-		}
+		k.send <- mes
 	}
 }
 

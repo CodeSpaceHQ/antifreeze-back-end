@@ -13,7 +13,7 @@ type perms struct {
 	authed bool
 }
 
-const (
+var (
 	authed *perms = &perms{
 		authed: true,
 	}
@@ -30,12 +30,12 @@ const (
 
 type user struct {
 	email string
-	perms map[string]bool
+	perms *perms
 	// used to decide whether to send information
 	// technically not necessay under the current proposal
 	// subs map[string]bool
 	conn *websocket.Conn
-	send chan []message
+	send chan message
 }
 
 func (u *user) writeUser() {
@@ -61,8 +61,7 @@ func (u *user) writeUser() {
 			if err != nil {
 				return
 			}
-			//w.Write(mes)
-			w.Write("Test")
+			w.Write([]byte(mes.getSub()))
 
 			if err := w.Close(); err != nil {
 				return
