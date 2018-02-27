@@ -3,7 +3,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -31,43 +30,25 @@ func main() {
 		}
 	})
 
-	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPost:
-			// server.Register(w, r)
-			conn, err := upgrader.Upgrade(w, r, nil)
+	http.HandleFunc("/echo", func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			log.Println("upgrade:", err)
+			return
+		}
+		defer conn.Close()
+		for {
+			mt, message, err := conn.ReadMessage()
 			if err != nil {
-				fmt.Println(err)
-				return
+				log.Println("read:", err)
+				break
 			}
-			go func(ws *websocket.Conn) {
-				defer ws.Close()
-				ws.SetReadLimit(512)
-				ws.SetReadDeadline(time.Now().Add(60 * time.Second))
-				ws.SetPongHandler(func(string) error { ws.SetReadDeadline(time.Now().Add(60 * time.Second)); return nil })
-				for {
-					_, _, err := ws.ReadMessage()
-					if err != nil {
-						break
-					}
-				}
-			}(conn)
-			go func(ws *websocket.Conn) {
-				pingTicker := time.NewTicker(60 * time.Second * 9 / 10)
-				defer func() {
-					pingTicker.Stop()
-					ws.Close()
-				}()
-				for {
-					select {
-					case <-pingTicker.C:
-						ws.SetWriteDeadline(time.Now().Add(10 * time.Second))
-						if err := ws.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
-							return
-						}
-					}
-				}
-			}(conn)
+			log.Printf("recv: %s", message)
+			err = conn.WriteMessage(mt, message)
+			if err != nil {
+				log.Println("write:", err)
+				break
+			}
 		}
 	})
 
