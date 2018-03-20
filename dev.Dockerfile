@@ -21,14 +21,8 @@ RUN dep ensure --vendor-only
 COPY . ${HOME}/go/src/github.com/NilsG-S/antifreeze-back-end/
 RUN make
 
-FROM google/cloud-sdk:latest
-
-ENV CLOUDSDK_CORE_PROJECT=antifreeze-dev
-
-RUN apt update -qq && \
-  apt install -y default-jre \
-  google-cloud-sdk-datastore-emulator
+FROM ubuntu:16.04
 
 COPY --from=build ${HOME}/go/src/github.com/NilsG-S/antifreeze-back-end/bin/antifreeze-back-end /bin/antifreeze
 
-CMD ["nohup", "gcloud", "beta", "emulators", "datastore", "start", "&", "&&", "antifreeze"]
+CMD ["antifreeze"]
