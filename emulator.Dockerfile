@@ -6,4 +6,6 @@ RUN apt update -qq && \
   apt install -y default-jre \
   google-cloud-sdk-datastore-emulator
 
-CMD ["gcloud", "beta", "emulators", "datastore", "start"]
+EXPOSE 8082
+
+CMD ["gcloud", "beta", "emulators", "datastore", "start", "--host-port=0.0.0.0:8082"]

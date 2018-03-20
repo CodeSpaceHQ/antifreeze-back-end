@@ -7,22 +7,15 @@ This section contains instructions for setting up and using the development envi
 
 ### Environment
 
-- Node.js 8.9.4
-- NPM 5.6.0
-- Serverless framework 1.26 (global install)
-- Go 1.9.3
-- Go Dep 0.4.1
-- JRE 6.x or newer
-- [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html)
 - Postman
 - Git
+- Docker
 
 ### Set Up
 
 1. Install the required tools
 2. Clone the repository
-3. Use Dep to install Go dependencies
-4. Add a `.env` file to the top level directory with the following contents (for development purposes):
+3. Add a `.env` file to the top level directory with the following contents (for development purposes):
 
 ```
 PORT=3000
@@ -39,119 +32,11 @@ PASSWORD=test
 
 ### Test Changes
 
-Instructions pending...
+#### Docker Setup
 
-# WebSocket
+1. Setup Cloud Datastore emulator `docker build -f emulator.Dockerfile -t emulator .` (only has to be done once)
+2. Setup server container `docker build -f dev.Dockerfile -t antifreeze .` (has to be done every time a change is made to the server)
+3. Run `emulator` `docker run -dit emulator`
+4. Run `antifreeze` `docker run -dit antifreeze`
 
-Requires a mapping from devices to clients, i.e. `map[deviceId]*Client`.
-
-## Connection:
-
-- email
-- isAuthed
-- permissions
-- subsriptions
-
-## Message
-
-```json
-{
-    "subsription": "string",
-    "operation": "ADD/REMOVE/UPDATE"
-}
-```
-
-## Path
-
-### /user/devices
-
-Make sure to update the front-end before doing server logic (to avoid situations where the front-end hasn't been setup to handle temp/alarm updates for a specific device). But then the server would have to remove the new device if something goes wrong.
-
-- deviceId
-
-#### ADD
-#### REMOVE
-
-### /device/alarm
-
-- deviceId
-
-#### UPDATE
-
-Allow for `nil` values
-
-- temp
-
-### /device/history
-
-- deviceId
-
-#### ADD
-
-- temp
-- time
-
-# REST
-
-## Endpoint
-
-Many of these should send updates to certain WebSockets
-
-### /user
-
-For creating users
-
-#### POST
-
-### /user/devices
-
-For managing a user's devices.
-
-#### GET
-
-Get all devices (for setup).
-
-#### POST
-
-- Adding a device to a user.
-- Requires a WebSocket push to `/user/device` subscribers.
-
-#### DELETE
-
-- Delete a device.
-- Requires a WebSocket push to `/user/device` subscribers.
-
-### /device
-
-#### POST
-
-- For adding devices to the database.
-
-#### PUT
-
-- For updating the name in the database.
-
-```json
-{
-    "name": "string"
-}
-```
-
-### /device/alarm
-
-#### PUT
-
-- Allow for `nil` values.
-- Requires a WebSocket push to `/device/alarm` subscribers.
-
-### /device/history
-
-#### GET
-
-- deviceId
-
-This endpoint gets all history for a single device
-
-#### POST
-
-- Requires a WebSocket push to `/device/history` subscribers.
+Note: these are primarily for users of the back-end. Developer instructions are pending.

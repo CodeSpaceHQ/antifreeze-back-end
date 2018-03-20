@@ -25,4 +25,8 @@ FROM ubuntu:16.04
 
 COPY --from=build ${HOME}/go/src/github.com/NilsG-S/antifreeze-back-end/bin/antifreeze-back-end /bin/antifreeze
 
+# Publish this port
+EXPOSE 8081
+# Find out how to link to other ports
+
 CMD ["antifreeze"]
