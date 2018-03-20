@@ -1,3 +1,4 @@
+# Replace this with golang to simplify?
 FROM ubuntu:16.04 AS build
 
 # Combine these to reduce layers?
@@ -23,10 +24,11 @@ RUN make
 
 FROM ubuntu:16.04
 
+# Note that this method doesn't carry over any static files
 COPY --from=build ${HOME}/go/src/github.com/NilsG-S/antifreeze-back-end/bin/antifreeze-back-end /bin/antifreeze
 
 # Publish this port
-EXPOSE 8081
+EXPOSE 8080
 # Find out how to link to other ports
 
 CMD ["antifreeze"]

@@ -10,6 +10,7 @@ This section contains instructions for setting up and using the development envi
 - Postman
 - Git
 - Docker
+- Docker-Compose (comes with Windows and Mac installations of Docker)
 
 ### Set Up
 
@@ -40,3 +41,5 @@ PASSWORD=test
 4. Run `antifreeze` `docker run -dit antifreeze`
 
 Note: these are primarily for users of the back-end. Developer instructions are pending.
+
+`docker-compose -f dev-docker-compose.yml up`

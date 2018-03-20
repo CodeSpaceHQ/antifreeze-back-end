@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  app:
+    image: antifreeze
+    ports:
+      # <host>:<guest>
+      - "8081:8080"
+    # Won't necessarily wait for the db to start, just the container
+    # Might cause problems
+    depends_on:
+      - db
+  db:
+    image: emulator
+    ports:
+      - "8082:8080"
