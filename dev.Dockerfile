@@ -1,5 +1,6 @@
 FROM ubuntu:16.04 AS build
 
+# Combine these to reduce layers?
 ENV PATH=${PATH}:/usr/local/go/bin
 ENV GOPATH=${HOME}/go
 ENV GOBIN=${HOME}/go/bin
@@ -20,13 +21,14 @@ RUN dep ensure --vendor-only
 COPY . ${HOME}/go/src/github.com/NilsG-S/antifreeze-back-end/
 RUN make
 
-FROM ubuntu:16.04
+FROM google/cloud-sdk:latest
+
+ENV CLOUDSDK_CORE_PROJECT=antifreeze-dev
+
+RUN apt update -qq && \
+  apt install -y default-jre \
+  google-cloud-sdk-datastore-emulator
 
 COPY --from=build ${HOME}/go/src/github.com/NilsG-S/antifreeze-back-end/bin/antifreeze-back-end /bin/antifreeze
 
-# RUN export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)" && \
-#   echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
-#   curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
-#   apt-get update && sudo apt-get install google-cloud-sdk
-
-CMD ["antifreeze"]
+CMD ["nohup", "gcloud", "beta", "emulators", "datastore", "start", "&", "&&", "antifreeze"]
