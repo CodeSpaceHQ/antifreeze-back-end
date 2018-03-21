@@ -26,8 +26,8 @@ func GetInstance() (*Conn, error) {
 			cli *datastore.Client
 		)
 
-		// TODO(NilsG-S): determine project name dev/prod?
-		cli, err = datastore.NewClient(ctx, "antifreeze")
+		// $DATASTORE_PROJECT_ID is used when second arg is empty
+		cli, err = datastore.NewClient(ctx, "")
 		if err != nil {
 			err = fmt.Errorf("Couldn't create client: %v", err)
 		}

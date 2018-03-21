@@ -8,12 +8,15 @@ import (
 	"time"
 
 	"github.com/NilsG-S/antifreeze-back-end/common"
+	"github.com/NilsG-S/antifreeze-back-end/common/db"
 	"github.com/NilsG-S/antifreeze-back-end/ws"
 )
 
 var addr = flag.String("addr", ":8080", "http service address")
 
 func main() {
+	var err error
+
 	server := ws.NewServer()
 	go server.RunServer()
 
@@ -22,6 +25,16 @@ func main() {
 		case http.MethodGet:
 			http.ServeFile(w, r, "home.html")
 		}
+	})
+
+	http.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+		cur, err := db.GetInstance()
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		cur.Testing()
 	})
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +64,7 @@ func main() {
 		}
 	})
 
-	err := http.ListenAndServe(*addr, nil)
+	err = http.ListenAndServe(*addr, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
