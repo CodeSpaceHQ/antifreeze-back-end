@@ -1,16 +1,14 @@
+# Have to rebuild images before using docker-compose
 version: '3'
-
 services:
   app:
+    # Use build instead?
     image: antifreeze
     ports:
       # <host>:<guest>
-      - "8081:8080"
-    # Won't necessarily wait for the db to start, just the container
-    # Might cause problems
+      - "8081:8081"
+    # Won't necessarily wait for the db to start, just the container (might cause problems)
     depends_on:
       - db
   db:
     image: emulator
-    ports:
-      - "8082:8080"

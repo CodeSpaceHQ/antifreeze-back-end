@@ -12,7 +12,7 @@ import (
 	"github.com/NilsG-S/antifreeze-back-end/ws"
 )
 
-var addr = flag.String("addr", ":8080", "http service address")
+var addr = flag.String("addr", ":8081", "http service address")
 
 func main() {
 	var err error

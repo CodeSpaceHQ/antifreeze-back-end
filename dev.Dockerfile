@@ -24,6 +24,10 @@ RUN make
 
 FROM ubuntu:16.04
 
+# `db` references the database emulator
+ENV DATASTORE_EMULATOR_HOST=db:8082
+ENV DATASTORE_PROJECT_ID=antifreezedev
+
 # Note that this method doesn't carry over any static files
 COPY --from=build ${HOME}/go/src/github.com/NilsG-S/antifreeze-back-end/bin/antifreeze-back-end /bin/antifreeze
 

@@ -16,30 +16,13 @@ This section contains instructions for setting up and using the development envi
 
 1. Install the required tools
 2. Clone the repository
-3. Add a `.env` file to the top level directory with the following contents (for development purposes):
-
-```
-PORT=3000
-SECRET=thisisoursecret
-SALT=10
-
-PROD_DB_URI=pending
-DEV_DB_URI=pending
-TEST_DB_URI=pending
-
-USERNAME=test@ttu.edu
-PASSWORD=test
-```
 
 ### Test Changes
 
-#### Docker Setup
-
-1. Setup Cloud Datastore emulator `docker build -f emulator.Dockerfile -t emulator .` (only has to be done once)
-2. Setup server container `docker build -f dev.Dockerfile -t antifreeze .` (has to be done every time a change is made to the server)
-3. Run `emulator` `docker run -dit emulator`
-4. Run `antifreeze` `docker run -dit antifreeze`
-
-Note: these are primarily for users of the back-end. Developer instructions are pending.
-
-`docker-compose -f dev-docker-compose.yml up`
+1. Change directories to `$GOPATH/src/github.com/NilsG-S/antifreeze-back-end`
+2. Setup Cloud Datastore emulator: `docker build -f emulator.Dockerfile -t emulator .`
+    - Only has to be done once
+3. Setup server container: `docker build -f dev.Dockerfile -t antifreeze .`
+    - Has to be done every time a change is made to the server
+4. Run dev environment: `docker-compose -f dev-docker-compose.yml up`
+5. Target `0.0.0.0:8081` when using Postman to make requests
