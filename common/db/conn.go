@@ -28,6 +28,7 @@ func GetInstance() (*Conn, error) {
 		)
 
 		// $DATASTORE_PROJECT_ID is used when second arg is empty
+		// $GOOGLE_APPLICATION_CREDENTIALS points to credentials JSON
 		cli, err = datastore.NewClient(ctx, "")
 		if err != nil {
 			err = fmt.Errorf("Couldn't create client: %v", err)
@@ -39,6 +40,7 @@ func GetInstance() (*Conn, error) {
 		}
 	})
 
+	// The server needs to fail if this ever returns an error
 	if err != nil {
 		return nil, err
 	}
