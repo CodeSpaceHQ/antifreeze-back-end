@@ -27,7 +27,7 @@ func main() {
 		}
 	})
 
-	http.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/test/post", func(w http.ResponseWriter, r *http.Request) {
 		cur, err := db.GetInstance()
 		if err != nil {
 			log.Println(err)
@@ -35,6 +35,16 @@ func main() {
 		}
 
 		cur.Testing()
+	})
+
+	http.HandleFunc("/test/get", func(w http.ResponseWriter, r *http.Request) {
+		cur, err := db.GetInstance()
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		cur.TestingGet()
 	})
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {

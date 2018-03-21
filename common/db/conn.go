@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"cloud.google.com/go/datastore"
+	"google.golang.org/api/iterator"
 )
 
 type Conn struct {
@@ -56,6 +57,23 @@ func (c *Conn) Testing() error {
 
 	if _, err := c.client.Put(c.context, k, e); err != nil {
 		return fmt.Errorf("Couldn't insert test entity: %v", err)
+	}
+
+	return nil
+}
+
+func (c *Conn) TestingGet() error {
+	q := datastore.NewQuery("Test")
+	for i := c.client.Run(c.context, q); ; {
+		var t Test
+		key, err := i.Next(&t)
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("Error when iterating test query: %v", err)
+		}
+		fmt.Println(key, t)
 	}
 
 	return nil
