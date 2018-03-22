@@ -20,9 +20,13 @@ This section contains instructions for setting up and using the development envi
 ### Test Changes
 
 1. Change directories to `$GOPATH/src/github.com/NilsG-S/antifreeze-back-end`
-2. Run dev environment: `docker-compose -f dev-docker-compose.yml up --build`
+2. If necessary, run `dep ensure` to update dependency files
+3. Run dev environment: `docker-compose -f dev-docker-compose.yml up --build`
     - Has to be done every time a change is made to the server
     - First run and runs after dependency changes take way longer
-3. Target `0.0.0.0:8081` when using Postman to make requests
+4. Target `0.0.0.0:8081` when using Postman to make requests
 
-Note: Run `dep ensure` after every dependency change to update `Gopkg`
+### Notes
+
+- You'll slowly accumulate dangling Docker images that consume gigabytes of space.
+ These can be removed by running `docker image prune`.
