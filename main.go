@@ -2,6 +2,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -47,9 +48,12 @@ func main() {
 	router.StaticFile("/", "home.html")
 
 	router.POST("/test/post", func(c *gin.Context) {
+		log.Println("Entering /test/post")
+
 		cur, err = db.GetInstance()
 		if err != nil {
-			c.String(http.StatusBadRequest, "Couldn't get DB connection: %v", err)
+			log.Println(err)
+			c.AbortWithError(http.StatusBadRequest, fmt.Errorf("Couldn't get DB connection: %v", err))
 			return
 		}
 
@@ -57,17 +61,21 @@ func main() {
 		c.String(http.StatusOK, "Test posing successful!")
 	})
 
-	router.POST("/test/get", func(c *gin.Context) {
+	router.GET("/test/get", func(c *gin.Context) {
+		log.Println("Entering /test/get")
+
 		cur, err = db.GetInstance()
 		if err != nil {
-			c.String(http.StatusBadRequest, "Couldn't get DB connection: %v", err)
+			log.Println(err)
+			c.AbortWithError(http.StatusBadRequest, fmt.Errorf("Couldn't get DB connection: %v", err))
 			return
 		}
 
 		var response []string
 		response, err = cur.TestingGet()
 		if err != nil {
-			c.String(http.StatusBadRequest, "Couldn't test get: %v", err)
+			log.Println(err)
+			c.AbortWithError(http.StatusBadRequest, fmt.Errorf("Couldn't test get: %v", err))
 			return
 		}
 
