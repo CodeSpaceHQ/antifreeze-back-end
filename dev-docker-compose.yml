@@ -7,7 +7,7 @@ services:
     ports:
       # <host>:<guest>
       - "8081:8081"
-    # Won't necessarily wait for the db to start, just the container (might cause problems)
+    # Potential problem: won't necessarily wait for the db to start, just the container
     depends_on:
       - db
   db:

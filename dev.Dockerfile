@@ -1,4 +1,3 @@
-# Replace this with golang to simplify?
 FROM golang:1.9.3 AS build
 
 ENV REPO=${GOPATH}/src/github.com/NilsG-S/antifreeze-back-end/
@@ -15,6 +14,7 @@ RUN dep ensure --vendor-only
 COPY . ${REPO}
 RUN make && mv bin/antifreeze-back-end /bin/antifreeze
 
+# Use Alpine?
 FROM ubuntu:16.04
 
 # `db` references the database emulator
