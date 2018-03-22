@@ -64,7 +64,8 @@ func (c *Conn) Testing() error {
 	return nil
 }
 
-func (c *Conn) TestingGet() error {
+func (c *Conn) TestingGet() ([]string, error) {
+	out := make([]string, 10)
 	q := datastore.NewQuery("Test")
 	for i := c.client.Run(c.context, q); ; {
 		var t Test
@@ -73,10 +74,10 @@ func (c *Conn) TestingGet() error {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("Error when iterating test query: %v", err)
+			return nil, fmt.Errorf("Error when iterating test query: %v", err)
 		}
-		fmt.Println(key, t)
+		out = append(out, fmt.Sprintf("Key: %s, Value: %s", key.String(), t.Value))
 	}
 
-	return nil
+	return out, nil
 }

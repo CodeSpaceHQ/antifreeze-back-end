@@ -4,6 +4,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -14,10 +15,24 @@ import (
 )
 
 func main() {
-	var err error
+	var (
+		err error
+		cur *db.Conn
+	)
+
+	out, err := os.OpenFile("/out.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	defer out.Close()
+	log.SetOutput(out)
 
 	// Can be customized with gin.New()
-	router := gin.Default()
+	router := gin.New()
+
+	router.Use(gin.LoggerWithWriter(out))
+
 	httpServer := &http.Server{
 		Addr:           ":8081",
 		Handler:        router,
@@ -32,9 +47,9 @@ func main() {
 	router.StaticFile("/", "home.html")
 
 	router.POST("/test/post", func(c *gin.Context) {
-		cur, err := db.GetInstance()
+		cur, err = db.GetInstance()
 		if err != nil {
-			c.String(http.StatusBadRequest, "Couldn't test posting: %v", err)
+			c.String(http.StatusBadRequest, "Couldn't get DB connection: %v", err)
 			return
 		}
 
@@ -43,13 +58,23 @@ func main() {
 	})
 
 	router.POST("/test/get", func(c *gin.Context) {
-		cur, err := db.GetInstance()
+		cur, err = db.GetInstance()
+		if err != nil {
+			c.String(http.StatusBadRequest, "Couldn't get DB connection: %v", err)
+			return
+		}
+
+		var response []string
+		response, err = cur.TestingGet()
 		if err != nil {
 			c.String(http.StatusBadRequest, "Couldn't test get: %v", err)
 			return
 		}
 
-		cur.TestingGet()
+		for _, v := range response {
+			log.Println(v)
+		}
+
 		c.String(http.StatusOK, "Test get successful!")
 	})
 
