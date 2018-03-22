@@ -20,9 +20,9 @@ This section contains instructions for setting up and using the development envi
 ### Test Changes
 
 1. Change directories to `$GOPATH/src/github.com/NilsG-S/antifreeze-back-end`
-2. Setup Cloud Datastore emulator: `docker build -f emulator.Dockerfile -t emulator .`
-    - Only has to be done once
-3. Setup server container: `docker build -f dev.Dockerfile -t antifreeze .`
+2. Run dev environment: `docker-compose -f dev-docker-compose.yml up --build`
     - Has to be done every time a change is made to the server
-4. Run dev environment: `docker-compose -f dev-docker-compose.yml up`
-5. Target `0.0.0.0:8081` when using Postman to make requests
+    - First run and runs after dependency changes take way longer
+3. Target `0.0.0.0:8081` when using Postman to make requests
+
+Note: Run `dep ensure` after every dependency change to update `Gopkg`

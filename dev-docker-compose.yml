@@ -1,8 +1,9 @@
-# Have to rebuild images before using docker-compose
 version: '3'
 services:
   app:
-    # Use build instead?
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
     image: antifreeze
     ports:
       # <host>:<guest>
@@ -11,4 +12,8 @@ services:
     depends_on:
       - db
   db:
+    build:
+      context: .
+      dockerfile: emulator.Dockerfile
+      # Replace ENV in Dockerfile with ARG?
     image: emulator
