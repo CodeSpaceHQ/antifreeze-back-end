@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: dev.Dockerfile
-    image: antifreeze
+    image: antifreezedev
     ports:
       # <host>:<guest>
       - "8081:8081"
