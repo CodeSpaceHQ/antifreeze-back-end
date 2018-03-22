@@ -2,79 +2,79 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 
 	"github.com/NilsG-S/antifreeze-back-end/common"
 	"github.com/NilsG-S/antifreeze-back-end/common/db"
 	"github.com/NilsG-S/antifreeze-back-end/ws"
 )
 
-var addr = flag.String("addr", ":8081", "http service address")
-
 func main() {
 	var err error
 
+	// Can be customized with gin.New()
+	router := gin.Default()
+	httpServer := &http.Server{
+		Addr:           ":8081",
+		Handler:        router,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
 	server := ws.NewServer()
+
 	go server.RunServer()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			http.ServeFile(w, r, "home.html")
-		}
-	})
+	router.StaticFile("/", "home.html")
 
-	http.HandleFunc("/test/post", func(w http.ResponseWriter, r *http.Request) {
+	router.POST("/test/post", func(c *gin.Context) {
 		cur, err := db.GetInstance()
 		if err != nil {
-			log.Println(err)
+			c.String(http.StatusBadRequest, "Couldn't test posting: %v", err)
 			return
 		}
 
 		cur.Testing()
+		c.String(http.StatusOK, "Test posing successful!")
 	})
 
-	http.HandleFunc("/test/get", func(w http.ResponseWriter, r *http.Request) {
+	router.POST("/test/get", func(c *gin.Context) {
 		cur, err := db.GetInstance()
 		if err != nil {
-			log.Println(err)
+			c.String(http.StatusBadRequest, "Couldn't test get: %v", err)
 			return
 		}
 
 		cur.TestingGet()
+		c.String(http.StatusOK, "Test get successful!")
 	})
 
-	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		server.Register(w, r)
+	router.Any("/ws", func(c *gin.Context) {
+		server.Register(c.Writer, c.Request)
 	})
 
-	http.HandleFunc("/user/devices", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPost:
-			// TODO: This is a stopgap
-			server.POSTUserDevices(1, "test@ttu.edu")
+	router.POST("/user/devices", func(c *gin.Context) {
+		// TODO: This is a stopgap
+		server.POSTUserDevices(1, "test@ttu.edu")
+	})
+
+	router.POST("/device/history", func(c *gin.Context) {
+		mes := common.Temperature{
+			Sub:      "/device/history",
+			Op:       common.Add,
+			DeviceID: 1,
+			Temp:     32,
+			Time:     time.Now(),
 		}
+
+		server.POSTDeviceHistory(mes)
 	})
 
-	http.HandleFunc("/device/history", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPost:
-			mes := common.Temperature{
-				Sub:      "/device/history",
-				Op:       common.Add,
-				DeviceID: 1,
-				Temp:     32,
-				Time:     time.Now(),
-			}
-
-			server.POSTDeviceHistory(mes)
-		}
-	})
-
-	err = http.ListenAndServe(*addr, nil)
+	err = httpServer.ListenAndServe()
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
