@@ -30,3 +30,4 @@ This section contains instructions for setting up and using the development envi
 
 - You'll slowly accumulate dangling Docker images that consume gigabytes of space.
  These can be removed by running `docker image prune`.
+- Running the server as root can result in an inability to access environment variables.
