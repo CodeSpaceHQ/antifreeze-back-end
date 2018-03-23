@@ -22,6 +22,7 @@ func main() {
 	)
 
 	// TODO: Have the output split between file and stdout
+	// TODO(NilsG-S): Maybe move the binary to a safer location?
 	out, err := os.OpenFile("/usr/local/out.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatal(err)

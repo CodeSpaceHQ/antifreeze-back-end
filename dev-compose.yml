@@ -3,7 +3,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: dev.Dockerfile
+      dockerfile: docker/dev
     image: antifreezedev
     ports:
       # <host>:<guest>
@@ -14,6 +14,6 @@ services:
   db:
     build:
       context: .
-      dockerfile: emulator.Dockerfile
+      dockerfile: docker/emulator
       # Replace ENV in Dockerfile with ARG?
     image: emulator
