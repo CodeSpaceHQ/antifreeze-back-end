@@ -28,8 +28,15 @@ This section contains instructions for setting up and using the development envi
 
 ### Deploying
 
-1. Run `terraform refresh` to update state
-2. Run `terraform apply` to deploy the new infrastructure
+1. Add `secret.tfvars` to the project with the following contents:
+
+```
+master_username = "example"
+master_password = "example"
+```
+
+2. Run `terraform refresh` to update state
+3. Run `terraform apply --var-file="secret.tfvars"` to deploy the new infrastructure
 
 ### Notes
 

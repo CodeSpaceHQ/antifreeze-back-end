@@ -10,6 +10,7 @@ vendor
 .terraform
 *.tfstate
 *.tfstate.backup
+*secret.tfvars
 
 # Editor
 
