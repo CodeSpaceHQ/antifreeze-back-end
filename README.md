@@ -26,6 +26,11 @@ This section contains instructions for setting up and using the development envi
     - First run and runs after dependency changes take way longer
 4. Target `0.0.0.0:8081` when using Postman to make requests
 
+### Deploying
+
+1. Run `terraform refresh` to update state
+2. Run `terraform apply` to deploy the new infrastructure
+
 ### Notes
 
 - You'll slowly accumulate dangling Docker images that consume gigabytes of space.
