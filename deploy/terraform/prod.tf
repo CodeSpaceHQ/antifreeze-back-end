@@ -10,6 +10,7 @@ module "kube" {
   }
 }
 
+# TODO: Add secrets to container
 # resource "kubernetes_secret" "ksec" {}
 
 resource "kubernetes_service" "kser" {
@@ -28,6 +29,9 @@ resource "kubernetes_service" "kser" {
     }
 
     type = "LoadBalancer"
+
+    # Assign static IP to this service's load balancer
+    load_balancer_ip = "${google_compute_address.addr.address}"
   }
 }
 
@@ -45,9 +49,11 @@ resource "kubernetes_pod" "kp" {
     container {
       image = "nilsgs/antifreeze"
 
+      # TODO: Increase efficiency by specifying version
       # Ensures that the container is updated
       image_pull_policy = "Always"
-      name              = "antifreeze-kc"
+
+      name = "antifreeze-kc"
 
       # List of ports to expose
       port {
@@ -58,8 +64,7 @@ resource "kubernetes_pod" "kp" {
   }
 }
 
-# Configuration of static ip
-# resource "google_compute_address" "addr" {
-# 	name = "antifreeze-a"
-# }
-
+# Configuration of static IP
+resource "google_compute_address" "addr" {
+  name = "antifreeze-addr"
+}

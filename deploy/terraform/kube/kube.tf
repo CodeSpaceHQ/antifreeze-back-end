@@ -1,3 +1,5 @@
+# TODO: Simplify this module and possibly combine it with prod.tf
+
 resource "google_container_cluster" "c" {
   name = "antifreeze-c"
   zone = "us-central1-a"

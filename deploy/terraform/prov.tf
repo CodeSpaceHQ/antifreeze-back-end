@@ -4,6 +4,14 @@ provider "google" {
   # Uses application default credentials
   alias   = "default"
   project = "antifreeze-199016"
+  region  = "us-central1"
+  zone    = "us-central1-a"
+}
+
+# TODO: Aliasing causes problems with implicit stuff (see addr)
+provider "google" {
+  project = "antifreeze-199016"
+  region  = "us-central1"
   zone    = "us-central1-a"
 }
 
