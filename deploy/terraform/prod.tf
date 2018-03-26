@@ -10,6 +10,7 @@ module "kube" {
   }
 }
 
+# TODO: This may be unnecessary for kubernetes
 module "gce-lb-http" {
   source = "GoogleCloudPlatform/lb-http/google"
   name   = "antifreeze-lb"
@@ -33,6 +34,7 @@ module "gce-lb-http" {
   ]
 }
 
+# TODO: This may be unnecessary for kubernetes
 resource "google_compute_url_map" "um" {
   name            = "antifreeze-um"
   default_service = "${module.gce-lb-http.backend_services[0]}"
@@ -48,7 +50,7 @@ resource "google_compute_url_map" "um" {
 
     path_rule {
       paths   = ["/test/post"]
-      service = "${kubernetes_service.kser.self_link}"
+      service = "${kubernetes_service.kser.metadata.self_link}"
     }
   }
 }
@@ -78,6 +80,7 @@ resource "kubernetes_pod" "kp" {
   metadata {
     name = "antifreeze-kp"
 
+    # Used to select this pod in kubernetes_service
     labels {
       App = "antifreeze"
     }
@@ -86,11 +89,22 @@ resource "kubernetes_pod" "kp" {
   spec {
     container {
       image = "nilsgs/antifreeze"
-      name  = "antifreeze-kc"
 
+      # Ensures that the container is updated
+      image_pull_policy = "Always"
+      name              = "antifreeze-kc"
+
+      # List of ports to expose
       port {
+        # This is the port for the server
         container_port = 8081
       }
     }
   }
 }
+
+# Configuration of static ip
+# resource "google_compute_address" "addr" {
+# 	name = "antifreeze-a"
+# }
+

@@ -1,3 +1,5 @@
+# TODO(NilsG-S): Set versions for tooling
+
 provider "google" {
   # Uses application default credentials
   alias   = "default"
