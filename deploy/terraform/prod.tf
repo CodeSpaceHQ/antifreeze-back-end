@@ -14,14 +14,15 @@ module "cluster" {
 # TODO: Add secrets to container
 # resource "kubernetes_secret" "ksec" {}
 
-resource "kubernetes_service" "kser" {
+# TODO: put kubernetes stuff in module?
+resource "kubernetes_service" "service" {
   metadata {
-    name = "antifreeze-kser"
+    name = "antifreeze-service"
   }
 
   spec {
     selector {
-      App = "${kubernetes_pod.kp.metadata.0.labels.App}"
+      App = "${kubernetes_pod.pod.metadata.0.labels.App}"
     }
 
     port {
@@ -36,9 +37,9 @@ resource "kubernetes_service" "kser" {
   }
 }
 
-resource "kubernetes_pod" "kp" {
+resource "kubernetes_pod" "pod" {
   metadata {
-    name = "antifreeze-kp"
+    name = "antifreeze-pod"
 
     # Used to select this pod in kubernetes_service
     labels {
@@ -48,13 +49,9 @@ resource "kubernetes_pod" "kp" {
 
   spec {
     container {
-      image = "nilsgs/antifreeze"
-
-      # TODO: Increase efficiency by specifying version
-      # Ensures that the container is updated
-      image_pull_policy = "Always"
-
-      name = "antifreeze-kc"
+      # Make sure to keep this updated!
+      image = "nilsgs/antifreeze:1"
+      name  = "antifreeze-container"
 
       # List of ports to expose
       port {
@@ -68,4 +65,7 @@ resource "kubernetes_pod" "kp" {
 # Configuration of static IP
 resource "google_compute_address" "addr" {
   name = "antifreeze-addr"
+
+  # This specifies that the address is static and external
+  address_type = "EXTERNAL"
 }
