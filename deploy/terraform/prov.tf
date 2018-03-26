@@ -15,11 +15,11 @@ provider "google" {
 }
 
 provider "kubernetes" {
-  host     = "${module.kube.endpoint}"
+  host     = "${module.cluster.endpoint}"
   username = "${var.master_username}"
   password = "${var.master_password}"
 
-  client_certificate     = "${base64decode(module.kube.client_certificate)}"
-  client_key             = "${base64decode(module.kube.client_key)}"
-  cluster_ca_certificate = "${base64decode(module.kube.cluster_ca_certificate)}"
+  client_certificate     = "${base64decode(module.cluster.client_certificate)}"
+  client_key             = "${base64decode(module.cluster.client_key)}"
+  cluster_ca_certificate = "${base64decode(module.cluster.cluster_ca_certificate)}"
 }

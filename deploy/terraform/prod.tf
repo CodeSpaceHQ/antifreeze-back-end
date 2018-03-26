@@ -1,5 +1,5 @@
-module "kube" {
-  source = "./kube"
+module "cluster" {
+  source = "./cluster"
 
   master_username = "${var.master_username}"
   master_password = "${var.master_password}"
