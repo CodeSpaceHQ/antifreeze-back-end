@@ -1,7 +1,3 @@
-module "comp" {
-	source = "./comp"
-}
-
 resource "google_container_cluster" "c" {
   name = "antifreeze-c"
   zone = "us-central1-a"
@@ -12,7 +8,24 @@ resource "google_container_cluster" "c" {
   }
 
   node_pool = [
-		"${module.comp.np}"
+    {
+      name       = "antifreeze-np"
+      node_count = 1
+
+      node_config {
+        image_type   = "COS"
+        disk_size_gb = "10"
+        machine_type = "g1-small"
+        tags         = ["${var.target_tags}"]
+
+        oauth_scopes = [
+          "compute-rw",
+          "storage-ro",
+          "logging-write",
+          "monitoring",
+        ]
+      }
+    },
   ]
 
   addons_config {
