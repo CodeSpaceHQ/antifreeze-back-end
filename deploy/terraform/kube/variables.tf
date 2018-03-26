@@ -1,13 +1,15 @@
 variable master_password {
-  type        = "string"
-  description = "Kubernetes master password"
+  type = "string"
 }
 
 variable master_username {
-  type        = "string"
-  description = "Kubernetes master username"
+  type = "string"
 }
 
-variable target_tags {
-  default = "back-end"
+variable back_end_tag {
+  type = "string"
+}
+
+variable zone {
+  type = "string"
 }

@@ -2,17 +2,16 @@
 
 provider "google" {
   # Uses application default credentials
-  alias   = "default"
-  project = "antifreeze-199016"
-  region  = "us-central1"
-  zone    = "us-central1-a"
+  project = "${var.project_id}"
+  region  = "${var.region}"
+  zone    = "${var.zone}"
 }
 
-# TODO: Aliasing causes problems with implicit stuff (see addr)
 provider "google" {
-  project = "antifreeze-199016"
-  region  = "us-central1"
-  zone    = "us-central1-a"
+  alias   = "cluster"
+  project = "${var.project_id}"
+  region  = "${var.region}"
+  zone    = "${var.zone}"
 }
 
 provider "kubernetes" {

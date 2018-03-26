@@ -1,8 +1,6 @@
-# TODO: Simplify this module and possibly combine it with prod.tf
-
-resource "google_container_cluster" "c" {
-  name = "antifreeze-c"
-  zone = "us-central1-a"
+resource "google_container_cluster" "cluster" {
+  name = "antifreeze-cluster"
+  zone = "${var.zone}"
 
   master_auth = {
     username = "${var.master_username}"
@@ -11,15 +9,17 @@ resource "google_container_cluster" "c" {
 
   node_pool = [
     {
-      name       = "antifreeze-np"
+      name       = "antifreeze-node-pool"
       node_count = 1
 
       node_config {
         image_type   = "COS"
         disk_size_gb = "10"
         machine_type = "g1-small"
-        tags         = ["${var.target_tags}"]
+        tags         = ["${var.back_end_tag}"]
 
+        # Minimum required scopes for GKE VMs
+        # Doesn't relate to container permissions
         oauth_scopes = [
           "compute-rw",
           "storage-ro",
@@ -31,20 +31,24 @@ resource "google_container_cluster" "c" {
   ]
 
   addons_config {
+    # The current architecture doesn't support horizontal scaling
     horizontal_pod_autoscaling {
       disabled = true
     }
 
+    # A load balancer is used to keep a static IP
     http_load_balancing {
       disabled = false
     }
 
+    # There hasn't been a need for the dashboard yet
     kubernetes_dashboard {
-      disabled = false
+      disabled = true
     }
 
+    # Hasn't been a need for it yet
     network_policy_config {
-      disabled = false
+      disabled = true
     }
   }
 }

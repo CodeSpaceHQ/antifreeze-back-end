@@ -3,10 +3,11 @@ module "kube" {
 
   master_username = "${var.master_username}"
   master_password = "${var.master_password}"
-  target_tags     = "${var.target_tags}"
+  back_end_tag    = "${var.back_end_tag}"
+  zone            = "${var.zone}"
 
   providers = {
-    google = "google.default"
+    google = "google.cluster"
   }
 }
 
