@@ -17,7 +17,7 @@ RUN make && mv bin/antifreeze-back-end /bin/antifreeze
 # Use Alpine?
 FROM ubuntu:16.04
 
-ENV DATASTORE_PROJECT_ID=antifreezedev
+ENV DATASTORE_PROJECT_ID=antifreeze-199016
 
 COPY --from=build /bin/antifreeze /bin/antifreeze
 
