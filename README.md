@@ -44,11 +44,16 @@ Notes:
 - Running terraform in a script requires `-auto-approve` flag
 - When making major infrastructure changes, it's better to run `terraform destory` before applying the new plan.
  Otherwise resources have a way of being orphaned.
+ Basically, destroying resources as a result of updates.
 - The Terraform config for this project requires the following APIs be enabled:
     1. Identity and Access Management API
     2. Cloud Resource Manager API
 - Make sure to keep docker file version tag updated, both in Terraform and Travis.
  This is the only way to deploy new container versions to the cloud.
+- `docker login`
+- `docker build -f .\deploy\docker\prod.Dockerfile -t nilsgs/antifreeze:latest -t nilsgs/antifreeze:2.5 .`
+- `docker push nilsgs/antifreeze:2.5`
+- `docker push nilsgs/antifreeze:latest`
 
 ### Notes
 
