@@ -28,15 +28,27 @@ This section contains instructions for setting up and using the development envi
 
 ### Deploying
 
-1. Add `secret.tfvars` to the project with the following contents:
+1. Change directories to `${project_path}/deploy/terraform`
+2. Create `secret.tfvars` with the following contents:
 
 ```
 master_username = "example"
 master_password = "example"
 ```
 
-2. Run `terraform refresh` to update state
-3. Run `terraform apply --var-file="secret.tfvars"` to deploy the new infrastructure
+3. Run `terraform init` to get required resources
+4. Run `terraform apply --var-file="secret.tfvars"` to deploy the new infrastructure
+
+Notes:
+
+- Running terraform in a script requires `-auto-approve` flag
+- When making major infrastructure changes, it's better to run `terraform destory` before applying the new plan.
+ Otherwise resources have a way of being orphaned.
+- The Terraform config for this project requires the following APIs be enabled:
+    1. Identity and Access Management API
+    2. Cloud Resource Manager API
+- Make sure to keep docker file version tag updated, both in Terraform and Travis.
+ This is the only way to deploy new container versions to the cloud.
 
 ### Notes
 
