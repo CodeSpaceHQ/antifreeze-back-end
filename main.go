@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/user"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -21,9 +22,14 @@ func main() {
 		cur *db.Conn
 	)
 
+	var usr *user.User
+	usr, err = user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// TODO: Have the output split between file and stdout
-	// TODO(NilsG-S): Maybe move the binary to a safer location?
-	out, err := os.OpenFile("/usr/local/out.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	out, err := os.OpenFile(usr.HomeDir+"/out.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -31,10 +37,10 @@ func main() {
 	defer out.Close()
 	log.SetOutput(out)
 
-	// Can be customized with gin.New()
 	router := gin.New()
 
 	router.Use(gin.LoggerWithWriter(out))
+	router.Use(gin.Recovery())
 
 	httpServer := &http.Server{
 		Addr:           ":8081",
