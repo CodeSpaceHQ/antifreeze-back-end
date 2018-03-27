@@ -11,9 +11,6 @@ module "cluster" {
   }
 }
 
-# TODO: Add secrets to container
-# resource "kubernetes_secret" "ksec" {}
-
 # Service account for app containers
 resource "google_service_account" "container" {
   account_id   = "container"
@@ -33,6 +30,16 @@ resource "google_service_account_key" "container-key" {
 resource "google_project_iam_member" "container-iam" {
   role   = "roles/datastore.user"
   member = "serviceAccount:${google_service_account.container.email}"
+}
+
+resource "kubernetes_secret" "secret" {
+  metadata {
+    name = "container-secret"
+  }
+
+  data {
+    "credentials.json" = "${base64decode(google_service_account_key.container-key.private_key)}"
+  }
 }
 
 # TODO: put kubernetes stuff in module?
@@ -69,15 +76,35 @@ resource "kubernetes_pod" "pod" {
   }
 
   spec {
+    volume = [
+      {
+        name = "container-credentials"
+
+        secret = {
+          secret_name = "${kubernetes_secret.secret.metadata.0.name}"
+        }
+      },
+    ]
+
     container {
       # Make sure to keep this updated!
-      image = "nilsgs/antifreeze:1"
+      image = "nilsgs/antifreeze:2"
       name  = "antifreeze-container"
 
       # List of ports to expose
       port {
         # This is the port for the server
         container_port = 8081
+      }
+
+      volume_mount {
+        name       = "container-credentials"
+        mount_path = "/var/secrets/google"
+      }
+
+      env {
+        name  = "GOOGLE_APPLICATION_CREDENTIALS"
+        value = "/var/secrets/google/credentials.json"
       }
     }
   }
