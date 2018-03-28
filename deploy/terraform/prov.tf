@@ -26,3 +26,13 @@ provider "kubernetes" {
   client_key             = "${base64decode(module.cluster.client_key)}"
   cluster_ca_certificate = "${base64decode(module.cluster.cluster_ca_certificate)}"
 }
+
+# Apparently backend configs can't contain interpolation
+terraform {
+  backend "gcs" {
+    bucket  = "antifreeze-tf-state"
+    prefix  = "prod"
+    project = "antifreeze-199016"
+    region  = "us-central1"
+  }
+}
