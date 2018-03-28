@@ -7,151 +7,53 @@ This section contains instructions for setting up and using the development envi
 
 ### Environment
 
-- Node.js 8.9.4
-- NPM 5.6.0
-- Serverless framework 1.26 (global install)
-- Go 1.9.3
-- Go Dep 0.4.1
-- JRE 6.x or newer
-- [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html)
 - Postman
 - Git
+- Docker
+- Docker-Compose (comes with Windows and Mac installations of Docker)
 
 ### Set Up
 
 1. Install the required tools
 2. Clone the repository
-3. Use Dep to install Go dependencies
-4. Add a `.env` file to the top level directory with the following contents (for development purposes):
-
-```
-PORT=3000
-SECRET=thisisoursecret
-SALT=10
-
-PROD_DB_URI=pending
-DEV_DB_URI=pending
-TEST_DB_URI=pending
-
-USERNAME=test@ttu.edu
-PASSWORD=test
-```
 
 ### Test Changes
 
-Instructions pending...
+1. Change directories to `$GOPATH/src/github.com/NilsG-S/antifreeze-back-end`
+2. If necessary, run `dep ensure` to update dependency files
+3. Run dev environment: `docker-compose -f dev-compose.yml up --build`
+    - Has to be done every time a change is made to the server
+    - First run and runs after dependency changes take way longer
+4. Target `0.0.0.0:8081` when using Postman to make requests
 
-# WebSocket
+### Deploying
 
-Requires a mapping from devices to clients, i.e. `map[deviceId]*Client`.
+1. Change directories to `${project_path}/deploy/terraform`
+2. Create `secret.tfvars` with the following contents:
 
-## Connection:
-
-- email
-- isAuthed
-- permissions
-- subsriptions
-
-## Message
-
-```json
-{
-    "subsription": "string",
-    "operation": "ADD/REMOVE/UPDATE"
-}
+```
+master_username = "example"
+master_password = "example"
 ```
 
-## Path
+3. Run `terraform init` to get required resources
+4. Run `terraform apply --var-file="secret.tfvars"` to deploy the new infrastructure
 
-### /user/devices
+Notes:
 
-Make sure to update the front-end before doing server logic (to avoid situations where the front-end hasn't been setup to handle temp/alarm updates for a specific device). But then the server would have to remove the new device if something goes wrong.
+- Running terraform in a script requires `-auto-approve` flag
+- When making major infrastructure changes, it's better to run `terraform destory` before applying the new plan.
+ Otherwise resources have a way of being orphaned.
+ Basically, destroying resources as a result of updates.
+- The Terraform config for this project requires the following APIs be enabled:
+    1. Identity and Access Management API
+    2. Cloud Resource Manager API
+- Make sure to keep docker file version tag updated, both in Terraform and Travis.
+ This is the only way to deploy new container versions to the cloud.
+ The files are `deploy.sh` and `deploy/terraform/prod.tf`.
 
-- deviceId
+### Notes
 
-#### ADD
-#### REMOVE
-
-### /device/alarm
-
-- deviceId
-
-#### UPDATE
-
-Allow for `nil` values
-
-- temp
-
-### /device/history
-
-- deviceId
-
-#### ADD
-
-- temp
-- time
-
-# REST
-
-## Endpoint
-
-Many of these should send updates to certain WebSockets
-
-### /user
-
-For creating users
-
-#### POST
-
-### /user/devices
-
-For managing a user's devices.
-
-#### GET
-
-Get all devices (for setup).
-
-#### POST
-
-- Adding a device to a user.
-- Requires a WebSocket push to `/user/device` subscribers.
-
-#### DELETE
-
-- Delete a device.
-- Requires a WebSocket push to `/user/device` subscribers.
-
-### /device
-
-#### POST
-
-- For adding devices to the database.
-
-#### PUT
-
-- For updating the name in the database.
-
-```json
-{
-    "name": "string"
-}
-```
-
-### /device/alarm
-
-#### PUT
-
-- Allow for `nil` values.
-- Requires a WebSocket push to `/device/alarm` subscribers.
-
-### /device/history
-
-#### GET
-
-- deviceId
-
-This endpoint gets all history for a single device
-
-#### POST
-
-- Requires a WebSocket push to `/device/history` subscribers.
+- You'll slowly accumulate dangling Docker images that consume gigabytes of space.
+ These can be removed by running `docker image prune`.
+- Running the server as root can result in an inability to access environment variables.

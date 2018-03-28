@@ -2,56 +2,120 @@
 package main
 
 import (
-	"flag"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/user"
 	"time"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/NilsG-S/antifreeze-back-end/common"
+	"github.com/NilsG-S/antifreeze-back-end/common/db"
 	"github.com/NilsG-S/antifreeze-back-end/ws"
 )
 
-var addr = flag.String("addr", ":8080", "http service address")
-
 func main() {
+	var (
+		err error
+		cur *db.Conn
+	)
+
+	var usr *user.User
+	usr, err = user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// TODO: Have the output split between file and stdout
+	out, err := os.OpenFile(usr.HomeDir+"/out.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	defer out.Close()
+	log.SetOutput(out)
+
+	router := gin.New()
+
+	router.Use(gin.LoggerWithWriter(out))
+	router.Use(gin.Recovery())
+
+	httpServer := &http.Server{
+		Addr:           ":8081",
+		Handler:        router,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
 	server := ws.NewServer()
+
 	go server.RunServer()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			http.ServeFile(w, r, "home.html")
+	router.StaticFile("/", "home.html")
+
+	router.POST("/test/post", func(c *gin.Context) {
+		log.Println("Entering /test/post")
+
+		cur, err = db.GetInstance()
+		if err != nil {
+			log.Println(err)
+			c.AbortWithError(http.StatusBadRequest, fmt.Errorf("Couldn't get DB connection: %v", err))
+			return
 		}
+
+		cur.Testing()
+		c.String(http.StatusOK, "Test posing successful!")
 	})
 
-	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		server.Register(w, r)
-	})
+	router.GET("/test/get", func(c *gin.Context) {
+		log.Println("Entering /test/get")
 
-	http.HandleFunc("/user/devices", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPost:
-			// TODO: This is a stopgap
-			server.POSTUserDevices(1, "test@ttu.edu")
+		cur, err = db.GetInstance()
+		if err != nil {
+			log.Println(err)
+			c.AbortWithError(http.StatusBadRequest, fmt.Errorf("Couldn't get DB connection: %v", err))
+			return
 		}
-	})
 
-	http.HandleFunc("/device/history", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPost:
-			mes := common.Temperature{
-				Sub:      "/device/history",
-				Op:       common.Add,
-				DeviceID: 1,
-				Temp:     32,
-				Time:     time.Now(),
-			}
-
-			server.POSTDeviceHistory(mes)
+		var response []string
+		response, err = cur.TestingGet()
+		if err != nil {
+			log.Println(err)
+			c.AbortWithError(http.StatusBadRequest, fmt.Errorf("Couldn't test get: %v", err))
+			return
 		}
+
+		for _, v := range response {
+			log.Println(v)
+		}
+
+		c.String(http.StatusOK, "Test get successful!")
 	})
 
-	err := http.ListenAndServe(*addr, nil)
+	router.Any("/ws", func(c *gin.Context) {
+		server.Register(c.Writer, c.Request)
+	})
+
+	router.POST("/user/devices", func(c *gin.Context) {
+		// TODO: This is a stopgap
+		server.POSTUserDevices(1, "test@ttu.edu")
+	})
+
+	router.POST("/device/history", func(c *gin.Context) {
+		mes := common.Temperature{
+			Sub:      "/device/history",
+			Op:       common.Add,
+			DeviceID: 1,
+			Temp:     32,
+			Time:     time.Now(),
+		}
+
+		server.POSTDeviceHistory(mes)
+	})
+
+	err = httpServer.ListenAndServe()
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

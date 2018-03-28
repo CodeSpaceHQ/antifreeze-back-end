@@ -1,8 +1,16 @@
-# golang output binary directory
+# Tool Output
+
+## golang output binary directory
 bin
 
-# golang vendor (dependencies) directory
+## golang vendor (dependencies) directory
 vendor
+
+## Terraform
+.terraform
+*.tfstate
+*.tfstate.backup
+*secret.tfvars
 
 # Editor
 

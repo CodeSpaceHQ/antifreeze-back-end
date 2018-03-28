@@ -1,7 +1,7 @@
 build:
-	# dep ensure
-	env GOOS=linux go build common/*.go
-	env GOOS=linux go build ws/mux/*.go
-	env GOOS=linux go build rest/*.go
-	env GOOS=linux go build ws/*.go
+	env GOOS=linux go install github.com/NilsG-S/antifreeze-back-end/common
+	env GOOS=linux go install github.com/NilsG-S/antifreeze-back-end/common/db
+	env GOOS=linux go install github.com/NilsG-S/antifreeze-back-end/ws/mux
+	env GOOS=linux go install github.com/NilsG-S/antifreeze-back-end/rest
+	env GOOS=linux go install github.com/NilsG-S/antifreeze-back-end/ws
 	env GOOS=linux go build -o bin/antifreeze-back-end main.go

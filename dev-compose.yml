@@ -1,0 +1,19 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: deploy/docker/dev.Dockerfile
+    image: antifreezedev
+    ports:
+      # <host>:<guest>
+      - "8081:8081"
+    # Potential problem: won't necessarily wait for the db to start, just the container
+    depends_on:
+      - db
+  db:
+    build:
+      context: .
+      dockerfile: deploy/docker/emulator.Dockerfile
+      # Replace ENV in Dockerfile with ARG?
+    image: emulator
