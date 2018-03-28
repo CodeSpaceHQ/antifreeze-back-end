@@ -50,10 +50,7 @@ Notes:
     2. Cloud Resource Manager API
 - Make sure to keep docker file version tag updated, both in Terraform and Travis.
  This is the only way to deploy new container versions to the cloud.
-- `docker login`
-- `docker build -f .\deploy\docker\prod.Dockerfile -t nilsgs/antifreeze:latest -t nilsgs/antifreeze:2.5 .`
-- `docker push nilsgs/antifreeze:2.5`
-- `docker push nilsgs/antifreeze:latest`
+ The files are `deploy.sh` and `deploy/terraform/prod.tf`.
 
 ### Notes
 
