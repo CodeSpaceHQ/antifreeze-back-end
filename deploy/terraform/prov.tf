@@ -2,12 +2,14 @@
 
 provider "google" {
   # Uses application default credentials
+  version = "~> 1.8"
   project = "${var.project_id}"
   region  = "${var.region}"
   zone    = "${var.zone}"
 }
 
 provider "google" {
+  version = "~> 1.8"
   alias   = "cluster"
   project = "${var.project_id}"
   region  = "${var.region}"
@@ -15,6 +17,7 @@ provider "google" {
 }
 
 provider "kubernetes" {
+  version  = "~> 1.1"
   host     = "${module.cluster.endpoint}"
   username = "${var.master_username}"
   password = "${var.master_password}"
