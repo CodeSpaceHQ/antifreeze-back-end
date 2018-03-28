@@ -10,6 +10,9 @@ docker push nilsgs/antifreeze:latest
 echo $SERVICE_ACCOUNT | base64 --decode > $GOOGLE_APPLICATION_CREDENTIALS
 echo $TF_SECRETS | base64 --decode > deploy/terraform/secret.tfvars
 
+ls -l
+ls -l deploy/terraform
+
 cd deploy/terraform
 terraform init
 terraform apply -auto-approve --var-file="secret.tfvars"
