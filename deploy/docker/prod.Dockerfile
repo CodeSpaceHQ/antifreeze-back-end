@@ -19,6 +19,13 @@ FROM ubuntu:16.04
 
 ENV DATASTORE_PROJECT_ID=antifreeze-199016
 
+RUN apt update -qq && \
+# NOTE: THIS IS VERY IMPORTANT, THE DATASTORE CLIENT
+# WILL NOT CONNECT WITHOUT IT.
+# The issue seems to be a gRPC issue that occurs only
+# in certain docker containers
+apt install -y ca-certificates
+
 COPY --from=build /bin/antifreeze /bin/antifreeze
 
 EXPOSE 8081
