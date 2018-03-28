@@ -26,7 +26,6 @@ resource "google_container_cluster" "cluster" {
           "storage-ro",
           "logging-write",
           "monitoring",
-          "datastore",
         ]
       }
     },

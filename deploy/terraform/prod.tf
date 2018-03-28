@@ -38,7 +38,7 @@ resource "kubernetes_secret" "secret" {
   }
 
   data {
-    "credentials.json" = "${base64decode(google_service_account_key.container-key.private_key)}"
+    credentials.json = "${base64decode(google_service_account_key.container-key.private_key)}"
   }
 }
 
@@ -88,7 +88,7 @@ resource "kubernetes_pod" "pod" {
 
     container {
       # Make sure to keep this updated!
-      image = "nilsgs/antifreeze:2.5"
+      image = "nilsgs/antifreeze:2.9"
       name  = "antifreeze-container"
 
       # List of ports to expose
