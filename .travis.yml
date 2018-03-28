@@ -6,6 +6,7 @@ sudo: required
 services:
   - docker
 env:
+  # This doesn't seem to be the actual repository
   - GOOGLE_APPLICATION_CREDENTIALS=${TRAVIS_BUILD_DIR}/key.json
 before_install:
   - sudo apt-get update -qq
