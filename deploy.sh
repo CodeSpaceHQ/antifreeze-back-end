@@ -3,7 +3,7 @@
 # This file is for Travis CI
 
 docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
-docker build -f .\deploy\docker\prod.Dockerfile -t nilsgs/antifreeze:latest -t nilsgs/antifreeze:2.9 .
+docker build -f deploy/docker/prod.Dockerfile -t nilsgs/antifreeze:latest -t nilsgs/antifreeze:2.9 .
 docker push nilsgs/antifreeze:2.9
 docker push nilsgs/antifreeze:latest
 

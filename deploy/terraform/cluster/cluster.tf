@@ -20,7 +20,6 @@ resource "google_container_cluster" "cluster" {
 
         # Minimum required scopes for GKE VMs
         # Doesn't relate to container permissions
-        # Actually, it's unclear whether these relate to container permissions
         oauth_scopes = [
           "compute-rw",
           "storage-ro",
