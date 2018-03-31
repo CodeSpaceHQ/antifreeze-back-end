@@ -23,6 +23,32 @@ type Env struct {
 	*ws.Server
 }
 
+func routes(router *gin.Engine, env *Env) {
+	// TODO: Add a NoRoute handler
+	router.StaticFile("/", "home.html")
+
+	router.Any("/ws", func(c *gin.Context) {
+		env.Register(c.Writer, c.Request)
+	})
+
+	router.POST("/user/devices", func(c *gin.Context) {
+		// TODO: This is a stopgap
+		env.POSTUserDevices(1, "test@ttu.edu")
+	})
+
+	router.POST("/device/history", func(c *gin.Context) {
+		mes := common.Temperature{
+			Sub:      "/device/history",
+			Op:       common.Add,
+			DeviceID: 1,
+			Temp:     32,
+			Time:     time.Now(),
+		}
+
+		env.POSTDeviceHistory(mes)
+	})
+}
+
 func main() {
 	var err error
 
@@ -85,28 +111,7 @@ func main() {
 
 	// Setting up routes
 
-	router.StaticFile("/", "home.html")
-
-	router.Any("/ws", func(c *gin.Context) {
-		env.Register(c.Writer, c.Request)
-	})
-
-	router.POST("/user/devices", func(c *gin.Context) {
-		// TODO: This is a stopgap
-		env.POSTUserDevices(1, "test@ttu.edu")
-	})
-
-	router.POST("/device/history", func(c *gin.Context) {
-		mes := common.Temperature{
-			Sub:      "/device/history",
-			Op:       common.Add,
-			DeviceID: 1,
-			Temp:     32,
-			Time:     time.Now(),
-		}
-
-		env.POSTDeviceHistory(mes)
-	})
+	routes(router, env)
 
 	// Running Server
 
