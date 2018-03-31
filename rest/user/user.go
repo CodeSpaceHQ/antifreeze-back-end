@@ -19,7 +19,6 @@ func Apply(route *gin.RouterGroup, env *env.Env) {
 type CreateInput struct {
 	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
-	Confirm  string `json:"confirm" binding:"required"`
 }
 
 func Create(model user.Interface) func(c *gin.Context) {
@@ -33,13 +32,6 @@ func Create(model user.Interface) func(c *gin.Context) {
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"message": fmt.Sprintf("Invald input: %v", err),
-			})
-			return
-		}
-
-		if json.Password != json.Confirm {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"message": "Passwords didn't match",
 			})
 			return
 		}

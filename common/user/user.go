@@ -11,6 +11,7 @@ import (
 	"github.com/NilsG-S/antifreeze-back-end/common/env"
 )
 
+// Make sure to handle case where no devices are present
 type User struct {
 	Email    string `datastore:"email"`
 	Password string `datastore:"password,noindex"`
@@ -76,7 +77,6 @@ func (m *Model) Create(email, password string, ctx context.Context) error {
 	e := &User{
 		Email:    email,
 		Password: hash,
-		// TODO: Figure out whether Devices needs to be defined
 	}
 
 	_, err = m.Put(ctx, k, e)
