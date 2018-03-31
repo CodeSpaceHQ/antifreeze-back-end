@@ -113,7 +113,7 @@ func routes(router *gin.Engine, env *env.Env) {
 
 	router.StaticFile("/", "home.html")
 
-	router.Any("/ws", func(c *gin.Context) {
+	router.GET("/ws", func(c *gin.Context) {
 		env.Register(c.Writer, c.Request)
 	})
 
