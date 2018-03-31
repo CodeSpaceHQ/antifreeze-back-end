@@ -25,16 +25,20 @@ func main() {
 	var usr *user.User
 	usr, err = user.Current()
 	if err != nil {
+		// TODO: Remove usage of Fatal? Just have the program handle fatal errors...
 		log.Fatal(err)
 	}
 
 	// TODO: Have the output split between file and stdout
+	// Or just have a production ENV variable that sets file/stdout
 	out, err := os.OpenFile(usr.HomeDir+"/out.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 	defer out.Close()
+	// TODO: pass log pointer to route handlers?
+	// log.New
 	log.SetOutput(out)
 
 	router := gin.New()
@@ -50,8 +54,6 @@ func main() {
 		MaxHeaderBytes: 1 << 20,
 	}
 	server := ws.NewServer()
-
-	go server.RunServer()
 
 	router.StaticFile("/", "home.html")
 
@@ -115,6 +117,7 @@ func main() {
 		server.POSTDeviceHistory(mes)
 	})
 
+	go server.RunServer()
 	err = httpServer.ListenAndServe()
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)

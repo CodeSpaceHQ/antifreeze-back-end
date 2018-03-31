@@ -10,6 +10,7 @@ import (
 )
 
 type Conn struct {
+	// TODO: There shouldn't be a single context
 	context context.Context
 	client  *datastore.Client
 }
@@ -18,6 +19,7 @@ var instance *Conn
 var once sync.Once
 
 // TODO(NilsG-S): Don't use singletons
+// TODO: use dependency injection?
 func GetInstance() (*Conn, error) {
 	var err error
 
