@@ -12,11 +12,9 @@ import (
 )
 
 type User struct {
-	// User Entity's Datastore key
-	Key      *datastore.Key `datastore:"__key__"`
-	Email    string         `datastore:""`
-	Password string         `datastore:"noindex"`
-	Devices  []int          `datastore:"noindex"`
+	Email    string `datastore:"email"`
+	Password string `datastore:"password,noindex"`
+	Devices  []int  `datastore:"devices,noindex"`
 }
 
 // In case we want to mock the model for unit tests
