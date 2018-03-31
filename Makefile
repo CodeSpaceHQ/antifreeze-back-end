@@ -1,4 +1,6 @@
 build:
+	env GOOS=linux go install github.com/NilsG-S/antifreeze-back-end/common/env
+	env GOOS=linux go install github.com/NilsG-S/antifreeze-back-end/common/user
 	env GOOS=linux go install github.com/NilsG-S/antifreeze-back-end/common
 	env GOOS=linux go install github.com/NilsG-S/antifreeze-back-end/ws/mux
 	env GOOS=linux go install github.com/NilsG-S/antifreeze-back-end/rest

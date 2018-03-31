@@ -14,40 +14,9 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/NilsG-S/antifreeze-back-end/common"
+	"github.com/NilsG-S/antifreeze-back-end/common/env"
 	"github.com/NilsG-S/antifreeze-back-end/ws"
 )
-
-type Env struct {
-	*datastore.Client
-	*log.Logger
-	*ws.Server
-}
-
-func routes(router *gin.Engine, env *Env) {
-	// TODO: Add a NoRoute handler
-	router.StaticFile("/", "home.html")
-
-	router.Any("/ws", func(c *gin.Context) {
-		env.Register(c.Writer, c.Request)
-	})
-
-	router.POST("/user/devices", func(c *gin.Context) {
-		// TODO: This is a stopgap
-		env.POSTUserDevices(1, "test@ttu.edu")
-	})
-
-	router.POST("/device/history", func(c *gin.Context) {
-		mes := common.Temperature{
-			Sub:      "/device/history",
-			Op:       common.Add,
-			DeviceID: 1,
-			Temp:     32,
-			Time:     time.Now(),
-		}
-
-		env.POSTDeviceHistory(mes)
-	})
-}
 
 func main() {
 	var err error
@@ -106,7 +75,7 @@ func main() {
 
 	// Setting up server "environment"
 
-	env := &Env{
+	env := &env.Env{
 		cli,
 		logger,
 		server,
@@ -125,4 +94,30 @@ func main() {
 	}
 
 	return
+}
+
+func routes(router *gin.Engine, env *env.Env) {
+	// TODO: Add a NoRoute handler
+	router.StaticFile("/", "home.html")
+
+	router.Any("/ws", func(c *gin.Context) {
+		env.Register(c.Writer, c.Request)
+	})
+
+	router.POST("/user/devices", func(c *gin.Context) {
+		// TODO: This is a stopgap
+		env.POSTUserDevices(1, "test@ttu.edu")
+	})
+
+	router.POST("/device/history", func(c *gin.Context) {
+		mes := common.Temperature{
+			Sub:      "/device/history",
+			Op:       common.Add,
+			DeviceID: 1,
+			Temp:     32,
+			Time:     time.Now(),
+		}
+
+		env.POSTDeviceHistory(mes)
+	})
 }
