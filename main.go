@@ -54,21 +54,24 @@ func main() {
 
 	// Setting up logger
 
-	var usr *user.User
-	usr, err = user.Current()
-	if err != nil {
-		fmt.Printf("Couldn't get current user: %v", err)
-		return
-	}
+	var out *os.File = os.Stdout
+	if e := os.Getenv("ANTIFREEZE_ENV"); e == "prod" {
+		// Getting the current user to find their home directory
+		var usr *user.User
+		usr, err = user.Current()
+		if err != nil {
+			fmt.Printf("Couldn't get current user: %v", err)
+			return
+		}
 
-	// TODO: Have the output split between file and stdout
-	// Or just have a production ENV variable that sets file/stdout
-	out, err := os.OpenFile(usr.HomeDir+"/out.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
-	if err != nil {
-		fmt.Printf("Couldn't open logfile: %v", err)
-		return
+		// Opening a log file in the current user's home directory
+		out, err = os.OpenFile(usr.HomeDir+"/out.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+		if err != nil {
+			fmt.Printf("Couldn't open logfile: %v", err)
+			return
+		}
+		defer out.Close()
 	}
-	defer out.Close()
 	logger := log.New(out, "", log.LstdFlags|log.Lshortfile)
 
 	// Setting up datastore client
