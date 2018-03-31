@@ -15,6 +15,7 @@ import (
 
 	"github.com/NilsG-S/antifreeze-back-end/common"
 	"github.com/NilsG-S/antifreeze-back-end/common/env"
+	userRoutes "github.com/NilsG-S/antifreeze-back-end/rest/user"
 	"github.com/NilsG-S/antifreeze-back-end/ws"
 )
 
@@ -76,9 +77,9 @@ func main() {
 	// Setting up server "environment"
 
 	env := &env.Env{
-		cli,
-		logger,
-		server,
+		Client: cli,
+		Logger: logger,
+		Server: server,
 	}
 
 	// Setting up routes
@@ -98,6 +99,18 @@ func main() {
 
 func routes(router *gin.Engine, env *env.Env) {
 	// TODO: Add a NoRoute handler
+
+	// # RESTful routes
+
+	rest := router.Group("/rest")
+
+	// ## User routes
+
+	user := rest.Group("/user")
+	userRoutes.Apply(user, env)
+
+	// Old routes
+
 	router.StaticFile("/", "home.html")
 
 	router.Any("/ws", func(c *gin.Context) {

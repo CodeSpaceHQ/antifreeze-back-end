@@ -21,8 +21,9 @@ type User struct {
 
 // In case we want to mock the model for unit tests
 type Interface interface {
-	GetByEmail(string) (*User, error)
-	Put(string, string) error
+	// context.Context is an interface, so it shouldn't be a pointer anyway
+	GetByEmail(string, context.Context) (*User, error)
+	Create(string, string, context.Context) error
 }
 
 type Model struct {
