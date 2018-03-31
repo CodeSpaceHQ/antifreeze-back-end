@@ -87,6 +87,15 @@
 
 [[projects]]
   branch = "master"
+  name = "golang.org/x/crypto"
+  packages = [
+    "bcrypt",
+    "blowfish"
+  ]
+  revision = "12892e8c234f4fe6f6803f052061de9057903bb2"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -228,6 +237,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3f46be6bc23b848b5deb5d3289ef458baeefbacb46889783d418c3da63a45249"
+  inputs-digest = "cb0e7048d326be36481667f6d0495293bc68f169dc42e7a1c0fce8f9cda7d6ad"
   solver-name = "gps-cdcl"
   solver-version = 1
