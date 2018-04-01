@@ -16,6 +16,11 @@ This section contains instructions for setting up and using the development envi
 
 1. Install the required tools
 2. Clone the repository
+3. Set the following environment variables:
+
+```
+ANTIFREEZE_SECRET=example
+```
 
 ### Test Changes
 
