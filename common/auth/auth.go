@@ -16,6 +16,7 @@ const (
 	InvalidUsernamePassword = "Invalid username or password"
 )
 
+// TODO: split out token claim extraction for usage in ws server (getting email when authing)
 // Regular function for usage in websocket server
 func Verify(tokenString string, env *env.Env) error {
 	// TODO: have this check scope of JWT (device vs user)

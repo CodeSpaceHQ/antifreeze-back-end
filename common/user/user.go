@@ -13,9 +13,10 @@ import (
 
 // Make sure to handle case where no devices are present
 type User struct {
-	Email    string `datastore:"email"`
-	Password string `datastore:"password,noindex"`
-	Devices  []int  `datastore:"devices,noindex"`
+	Key      *datastore.Key   `datastore:"__key__"`
+	Email    string           `datastore:"email"`
+	Password string           `datastore:"password,noindex"`
+	Devices  []*datastore.Key `datastore:"devices,noindex"`
 }
 
 // In case we want to mock the model for unit tests
@@ -31,33 +32,21 @@ type Model struct {
 }
 
 func (m *Model) GetByEmail(email string, ctx context.Context) (*User, error) {
-	results := make([]*User, 0, 1)
+	var u User
 
 	q := datastore.NewQuery("User").Filter("email =", email)
 	t := m.Run(ctx, q)
-	for {
-		var u User
-		_, err := t.Next(&u)
-		if err == iterator.Done {
-			break
-		}
+	_, err := t.Next(&u)
 
-		if err != nil {
-			return nil, fmt.Errorf("Error when iterating GetByEmail query: %v", err)
-		}
-
-		results = append(results, &u)
-	}
-
-	if len(results) > 1 {
-		return nil, fmt.Errorf("GetByEmail returned more than one user")
-	}
-	// If no user was found
-	if len(results) == 0 {
+	if err == iterator.Done {
 		return nil, nil
 	}
 
-	return results[0], nil
+	if err != nil {
+		return nil, fmt.Errorf("Error when iterating GetByEmail query: %v", err)
+	}
+
+	return &u, nil
 }
 
 func (m *Model) Create(email, password string, ctx context.Context) error {
