@@ -23,6 +23,7 @@ type Interface interface {
 	// context.Context is an interface, so it shouldn't be a pointer anyway
 	GetByEmail(string, context.Context) (*User, error)
 	Create(string, string, context.Context) error
+	GetSecret() string
 }
 
 type Model struct {
@@ -95,4 +96,13 @@ func hashAndSalt(password string) (string, error) {
 	}
 
 	return string(hash), nil
+}
+
+func ComparePassword(hashed, plain string) error {
+	err := bcrypt.CompareHashAndPassword([]byte(hashed), []byte(plain))
+	if err != nil {
+		return fmt.Errorf("Password comparison failed: %v", err)
+	}
+
+	return nil
 }

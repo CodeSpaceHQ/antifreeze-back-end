@@ -11,4 +11,10 @@ type Env struct {
 	*datastore.Client
 	*log.Logger
 	*ws.Server
+
+	Secret string
+}
+
+func (e *Env) GetSecret() string {
+	return e.Secret
 }
