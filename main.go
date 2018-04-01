@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,38 +10,61 @@ import (
 	"os/user"
 	"time"
 
+	"cloud.google.com/go/datastore"
 	"github.com/gin-gonic/gin"
 
 	"github.com/NilsG-S/antifreeze-back-end/common"
-	"github.com/NilsG-S/antifreeze-back-end/common/db"
+	"github.com/NilsG-S/antifreeze-back-end/common/env"
+	authRoutes "github.com/NilsG-S/antifreeze-back-end/rest/auth"
+	userRoutes "github.com/NilsG-S/antifreeze-back-end/rest/user"
 	"github.com/NilsG-S/antifreeze-back-end/ws"
 )
 
 func main() {
-	var (
-		err error
-		cur *db.Conn
-	)
+	var err error
 
-	var usr *user.User
-	usr, err = user.Current()
-	if err != nil {
-		log.Fatal(err)
+	// Setting up logger
+
+	var out *os.File = os.Stdout
+	if e := os.Getenv("ANTIFREEZE_ENV"); e == "prod" {
+		// Getting the current user to find their home directory
+		var usr *user.User
+		usr, err = user.Current()
+		if err != nil {
+			fmt.Printf("Couldn't get current user: %v", err)
+			return
+		}
+
+		// Opening a log file in the current user's home directory
+		out, err = os.OpenFile(usr.HomeDir+"/out.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+		if err != nil {
+			fmt.Printf("Couldn't open logfile: %v", err)
+			return
+		}
+		defer out.Close()
 	}
+	logger := log.New(out, "", log.LstdFlags|log.Lshortfile)
 
-	// TODO: Have the output split between file and stdout
-	out, err := os.OpenFile(usr.HomeDir+"/out.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	// Setting up datastore client
+
+	var cli *datastore.Client
+	ctx := context.Background()
+	// $DATASTORE_PROJECT_ID is used when second arg is empty
+	// $GOOGLE_APPLICATION_CREDENTIALS points to credentials JSON
+	cli, err = datastore.NewClient(ctx, "")
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Couldn't create client: %v", err)
 		return
 	}
-	defer out.Close()
-	log.SetOutput(out)
+
+	// Setting up router
 
 	router := gin.New()
 
 	router.Use(gin.LoggerWithWriter(out))
 	router.Use(gin.Recovery())
+
+	// Setting up server
 
 	httpServer := &http.Server{
 		Addr:           ":8081",
@@ -51,56 +75,58 @@ func main() {
 	}
 	server := ws.NewServer()
 
+	// Setting up server "environment"
+
+	env := &env.Env{
+		Client: cli,
+		Logger: logger,
+		Server: server,
+		Secret: os.Getenv("ANTIFREEZE_SECRET"),
+	}
+
+	// Setting up routes
+
+	routes(router, env)
+
+	// Running Server
+
 	go server.RunServer()
+	err = httpServer.ListenAndServe()
+	if err != nil {
+		fmt.Printf("ListenAndServe error: %v", err)
+	}
+
+	return
+}
+
+func routes(router *gin.Engine, env *env.Env) {
+	// TODO: Add a NoRoute handler
+
+	// # RESTful routes
+
+	rest := router.Group("/rest")
+
+	// ## User routes
+
+	user := rest.Group("/user")
+	userRoutes.Apply(user, env)
+
+	// ## Auth routes
+
+	auth := rest.Group("/auth")
+	authRoutes.Apply(auth, env)
+
+	// Old routes
 
 	router.StaticFile("/", "home.html")
 
-	router.POST("/test/post", func(c *gin.Context) {
-		log.Println("Entering /test/post")
-
-		cur, err = db.GetInstance()
-		if err != nil {
-			log.Println(err)
-			c.AbortWithError(http.StatusBadRequest, fmt.Errorf("Couldn't get DB connection: %v", err))
-			return
-		}
-
-		cur.Testing()
-		c.String(http.StatusOK, "Test posing successful!")
-	})
-
-	router.GET("/test/get", func(c *gin.Context) {
-		log.Println("Entering /test/get")
-
-		cur, err = db.GetInstance()
-		if err != nil {
-			log.Println(err)
-			c.AbortWithError(http.StatusBadRequest, fmt.Errorf("Couldn't get DB connection: %v", err))
-			return
-		}
-
-		var response []string
-		response, err = cur.TestingGet()
-		if err != nil {
-			log.Println(err)
-			c.AbortWithError(http.StatusBadRequest, fmt.Errorf("Couldn't test get: %v", err))
-			return
-		}
-
-		for _, v := range response {
-			log.Println(v)
-		}
-
-		c.String(http.StatusOK, "Test get successful!")
-	})
-
-	router.Any("/ws", func(c *gin.Context) {
-		server.Register(c.Writer, c.Request)
+	router.GET("/ws", func(c *gin.Context) {
+		env.Register(c.Writer, c.Request)
 	})
 
 	router.POST("/user/devices", func(c *gin.Context) {
 		// TODO: This is a stopgap
-		server.POSTUserDevices(1, "test@ttu.edu")
+		env.POSTUserDevices(1, "test@ttu.edu")
 	})
 
 	router.POST("/device/history", func(c *gin.Context) {
@@ -112,13 +138,6 @@ func main() {
 			Time:     time.Now(),
 		}
 
-		server.POSTDeviceHistory(mes)
+		env.POSTDeviceHistory(mes)
 	})
-
-	err = httpServer.ListenAndServe()
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
-	}
-
-	return
 }

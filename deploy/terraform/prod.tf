@@ -106,6 +106,16 @@ resource "kubernetes_pod" "pod" {
         name  = "GOOGLE_APPLICATION_CREDENTIALS"
         value = "/var/secrets/google/credentials.json"
       }
+
+      env {
+        name  = "ANTIFREEZE_ENV"
+        value = "prod"
+      }
+
+      env {
+        name  = "ANTIFREEZE_SECRET"
+        value = "${var.antifreeze_secret}"
+      }
     }
   }
 }
