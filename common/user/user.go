@@ -33,7 +33,7 @@ type Model struct {
 func (m *Model) GetByEmail(email string, ctx context.Context) (*User, error) {
 	results := make([]*User, 0, 1)
 
-	q := datastore.NewQuery("User")
+	q := datastore.NewQuery("User").Filter("email =", email)
 	t := m.Run(ctx, q)
 	for {
 		var u User
