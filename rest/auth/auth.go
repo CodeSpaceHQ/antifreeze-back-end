@@ -73,7 +73,8 @@ func Login(model user.Interface) func(c *gin.Context) {
 		// TODO: Consider adding type claim for device vs user
 		exp := time.Now().AddDate(1, 0, 0).Unix()
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"exp":   exp,
+			"exp": exp,
+			// TODO: use User key encoding instead
 			"email": json.Email,
 		})
 
@@ -86,6 +87,7 @@ func Login(model user.Interface) func(c *gin.Context) {
 			return
 		}
 
+		// TODO: Add fully populated user with devices
 		c.JSON(http.StatusOK, gin.H{
 			"token": tokenStr,
 		})

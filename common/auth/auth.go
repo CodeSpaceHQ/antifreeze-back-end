@@ -20,7 +20,6 @@ const (
 // Regular function for usage in websocket server
 func Verify(tokenString string, env *env.Env) error {
 	// TODO: have this check scope of JWT (device vs user)
-	// time.Now().Unix() < jwt.exp
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
