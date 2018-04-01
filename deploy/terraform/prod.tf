@@ -111,6 +111,11 @@ resource "kubernetes_pod" "pod" {
         name  = "ANTIFREEZE_ENV"
         value = "prod"
       }
+
+      env {
+        name  = "ANTIFREEZE_SECRET"
+        value = "${var.antifreeze_secret}"
+      }
     }
   }
 }

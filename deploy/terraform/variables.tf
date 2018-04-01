@@ -16,6 +16,10 @@ variable zone {
   default     = "us-central1-a"
 }
 
+variable back_end_tag {
+  default = "back-end"
+}
+
 variable master_password {
   type        = "string"
   description = "Kubernetes master password"
@@ -26,6 +30,7 @@ variable master_username {
   description = "Kubernetes master username"
 }
 
-variable back_end_tag {
-  default = "back-end"
+variable antifreeze_secret {
+  type        = "string"
+  description = "Signing secret for JWT"
 }

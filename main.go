@@ -15,6 +15,7 @@ import (
 
 	"github.com/NilsG-S/antifreeze-back-end/common"
 	"github.com/NilsG-S/antifreeze-back-end/common/env"
+	authRoutes "github.com/NilsG-S/antifreeze-back-end/rest/auth"
 	userRoutes "github.com/NilsG-S/antifreeze-back-end/rest/user"
 	"github.com/NilsG-S/antifreeze-back-end/ws"
 )
@@ -80,6 +81,7 @@ func main() {
 		Client: cli,
 		Logger: logger,
 		Server: server,
+		Secret: os.Getenv("ANTIFREEZE_SECRET"),
 	}
 
 	// Setting up routes
@@ -108,6 +110,11 @@ func routes(router *gin.Engine, env *env.Env) {
 
 	user := rest.Group("/user")
 	userRoutes.Apply(user, env)
+
+	// ## Auth routes
+
+	auth := rest.Group("/auth")
+	authRoutes.Apply(auth, env)
 
 	// Old routes
 
