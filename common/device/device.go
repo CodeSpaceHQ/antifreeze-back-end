@@ -28,25 +28,27 @@ type Device struct {
 // Use Unix time
 
 type Interface interface {
-	Create(string, *datastore.Key) error
-	GetSecret() string
+	Create(*user.User, string, context.Context) (*Device, error)
 }
 
 type Model struct {
 	*env.Env
 }
 
-func (m *Model) Create(u *user.User, ctx context.Context) error {
+func (m *Model) Create(u *user.User, name string, ctx context.Context) (*Device, error) {
+	var err error
+
 	// Creating device
 
 	k := datastore.IncompleteKey("Device", nil)
 	e := &Device{
 		User: u.Key,
+		Name: name,
 	}
 
-	_, err := m.Put(ctx, k, e)
+	e.Key, err = m.Put(ctx, k, e)
 	if err != nil {
-		return fmt.Errorf("Couldn't put new device in Datastore: %v", err)
+		return nil, fmt.Errorf("Couldn't put new device in Datastore: %v", err)
 	}
 
 	// Linking device to user
@@ -54,13 +56,13 @@ func (m *Model) Create(u *user.User, ctx context.Context) error {
 	if u.Devices == nil {
 		u.Devices = make([]*datastore.Key, 0, 1)
 	}
-	u.Devices = append(u.Devices, k)
+	u.Devices = append(u.Devices, e.Key)
 
 	_, err = m.Mutate(ctx, datastore.NewUpdate(u.Key, u))
 	if err != nil {
 		// TODO: delete created device from DB?
-		return fmt.Errorf("Couldn't link device to user: %v", err)
+		return nil, fmt.Errorf("Couldn't link device to user: %v", err)
 	}
 
-	return nil
+	return e, nil
 }

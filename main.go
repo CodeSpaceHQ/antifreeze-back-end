@@ -16,6 +16,7 @@ import (
 	"github.com/NilsG-S/antifreeze-back-end/common"
 	"github.com/NilsG-S/antifreeze-back-end/common/env"
 	authRoutes "github.com/NilsG-S/antifreeze-back-end/rest/auth"
+	dRoutes "github.com/NilsG-S/antifreeze-back-end/rest/device"
 	userRoutes "github.com/NilsG-S/antifreeze-back-end/rest/user"
 	"github.com/NilsG-S/antifreeze-back-end/ws"
 )
@@ -115,6 +116,11 @@ func routes(router *gin.Engine, env *env.Env) {
 
 	auth := rest.Group("/auth")
 	authRoutes.Apply(auth, env)
+
+	// ## Device routes
+
+	device := rest.Group("/device")
+	dRoutes.Apply(device, env)
 
 	// Old routes
 
