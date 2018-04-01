@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -43,27 +44,12 @@ func Verify(tokenString string, env *env.Env) error {
 	return nil
 }
 
-type VerifyInput struct {
-	Token string `json:"token" binding:"required"`
-}
-
 // Middleware for usage in Gin
 func VerifyMiddleware(env *env.Env) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var (
-			err  error
-			json VerifyInput
-		)
-
-		err = c.BindJSON(&json)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"message": fmt.Sprintf("Invalid input: %v", err),
-			})
-			return
-		}
-
-		err = Verify(json.Token, env)
+		// MUST PUT TOKEN IN `Authorization` HEADER
+		token := strings.Split(c.Request.Header.Get("Authorization"), " ")[1]
+		err := Verify(token, env)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"message": fmt.Sprintf("Invalid token: %v", err),
