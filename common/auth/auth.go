@@ -36,9 +36,17 @@ func Verify(tokenString string, env *env.Env) error {
 		return fmt.Errorf("Couldn't map claims")
 	}
 
-	ok = claims.VerifyExpiresAt(time.Now().Unix(), true)
+	var tType string
+	tType, ok = claims["type"].(string)
 	if !ok {
-		return fmt.Errorf("Token has expired")
+		return fmt.Errorf("Token `type` wasn't a string")
+	}
+
+	if tType == "user" {
+		ok = claims.VerifyExpiresAt(time.Now().Unix(), true)
+		if !ok {
+			return fmt.Errorf("Token has expired")
+		}
 	}
 
 	return nil

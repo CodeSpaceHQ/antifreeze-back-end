@@ -3,7 +3,6 @@ package device
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -84,10 +83,8 @@ func Create(uModel user.Interface, dModel device.Interface) func(c *gin.Context)
 
 		// Making JWT
 
-		exp := time.Now().AddDate(1, 0, 0).Unix()
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			// TODO: These tokens shouldn't ever expire
-			"exp":        exp,
+			"type":       "device",
 			"device_key": d.Key.Encode(),
 			"user_key":   u.Key.Encode(),
 		})
