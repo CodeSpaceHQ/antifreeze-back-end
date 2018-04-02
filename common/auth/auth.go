@@ -14,12 +14,22 @@ import (
 
 const (
 	InvalidUsernamePassword = "Invalid username or password"
+	UserType                = "user"
+	DeviceType              = "device"
 )
+
+// TODO: add auth model
+
+type Claims struct {
+	Type      string `json:"type"`
+	DeviceKey string `json:"device_key,omitempty"`
+	UserKey   string `json:"user_key"`
+	jwt.StandardClaims
+}
 
 // TODO: split out token claim extraction for usage in ws server (getting email when authing)
 // Regular function for usage in websocket server
 func Verify(tokenString string, env *env.Env) error {
-	// TODO: have this check scope of JWT (device vs user)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
@@ -52,9 +62,22 @@ func Verify(tokenString string, env *env.Env) error {
 	return nil
 }
 
+// TODO: Generate
+
+// Note: these all verify that the token is valid as well
+// TODO: Decode
+// TODO: DecodeUser
+// TODO: DecodeDevice
+
+// TODO: UserMiddleware - checks for expiration date
+// TODO: DeviceMiddleware
+
+// TODO: Add scope checker for tokens? Long term, if ever
+
 // Middleware for usage in Gin
 func VerifyMiddleware(env *env.Env) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// TODO: Put decoded JWT into context?
 		// MUST PUT TOKEN IN `Authorization` HEADER
 		token := strings.Split(c.Request.Header.Get("Authorization"), " ")[1]
 		err := Verify(token, env)
