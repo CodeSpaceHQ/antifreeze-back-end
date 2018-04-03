@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 
 	"github.com/NilsG-S/antifreeze-back-end/common/auth"
@@ -14,10 +13,11 @@ import (
 )
 
 func Apply(route *gin.RouterGroup, env *env.Env) {
-	uModel := &user.Model{Env: env}
+	aModel := &auth.Model{Env: env}
 	dModel := &device.Model{Env: env}
+	uModel := &user.Model{Env: env}
 
-	route.POST("/create", Create(uModel, dModel))
+	route.POST("/create", Create(uModel, dModel, aModel))
 }
 
 type CreateInput struct {
@@ -26,7 +26,7 @@ type CreateInput struct {
 	Name     string `json:"name" binding:"required"`
 }
 
-func Create(uModel user.Interface, dModel device.Interface) func(c *gin.Context) {
+func Create(uModel user.Interface, dModel device.Interface, aModel auth.Interface) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var (
 			err  error
@@ -83,14 +83,12 @@ func Create(uModel user.Interface, dModel device.Interface) func(c *gin.Context)
 
 		// Making JWT
 
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"type":       "device",
-			"device_key": d.Key.Encode(),
-			"user_key":   u.Key.Encode(),
-		})
-
 		var tokenStr string
-		tokenStr, err = token.SignedString([]byte(uModel.GetSecret()))
+		tokenStr, err = aModel.Generate(&auth.DeviceClaims{
+			Type:      auth.DeviceType,
+			UserKey:   u.Key.Encode(),
+			DeviceKey: d.Key.Encode(),
+		})
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"message": fmt.Sprintf("Unable to generate token: %v", err),

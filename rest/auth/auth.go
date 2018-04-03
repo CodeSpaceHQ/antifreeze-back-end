@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 
 	"github.com/NilsG-S/antifreeze-back-end/common/auth"
@@ -14,9 +13,10 @@ import (
 )
 
 func Apply(route *gin.RouterGroup, env *env.Env) {
-	model := &user.Model{Env: env}
+	aModel := &auth.Model{Env: env}
+	uModel := &user.Model{Env: env}
 
-	route.POST("/login", Login(model))
+	route.POST("/login", Login(aModel, uModel))
 }
 
 type LoginInput struct {
@@ -24,7 +24,7 @@ type LoginInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func Login(model user.Interface) func(c *gin.Context) {
+func Login(aModel auth.Interface, uModel user.Interface) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var (
 			err  error
@@ -44,7 +44,7 @@ func Login(model user.Interface) func(c *gin.Context) {
 		// Getting user
 
 		var u *user.User
-		u, err = model.GetByEmail(json.Email, c)
+		u, err = uModel.GetByEmail(json.Email, c)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"message": fmt.Sprintf("Couldn't find user: %v", err),
@@ -70,17 +70,12 @@ func Login(model user.Interface) func(c *gin.Context) {
 
 		// Making JWT
 
-		// TODO: Consider adding type claim for device vs user
-		exp := time.Now().AddDate(1, 0, 0).Unix()
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"type":  "user",
-			"exp":   exp,
-			"email": json.Email,
-			// TODO: use User key encoding instead
-		})
-
 		var tokenStr string
-		tokenStr, err = token.SignedString([]byte(model.GetSecret()))
+		tokenStr, err = aModel.Generate(&auth.UserClaims{
+			Type:      auth.UserType,
+			UserKey:   u.Key.Encode(),
+			ExpiresAt: time.Now().AddDate(1, 0, 0).Unix(),
+		})
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"message": fmt.Sprintf("Unable to generate token: %v", err),

@@ -18,13 +18,44 @@ const (
 	DeviceType              = "device"
 )
 
-// TODO: add auth model
-
-type Claims struct {
+type UserClaims struct {
 	Type      string `json:"type"`
-	DeviceKey string `json:"device_key,omitempty"`
 	UserKey   string `json:"user_key"`
-	jwt.StandardClaims
+	ExpiresAt int64  `json:"exp"`
+}
+
+func (u *UserClaims) Valid() error {
+	now := time.Now().Unix()
+
+	if u.ExpiresAt != 0 && now > u.ExpiresAt {
+		return fmt.Errorf("Token is expired")
+	}
+
+	return nil
+}
+
+type DeviceClaims struct {
+	Type      string `json:"type"`
+	UserKey   string `json:"user_key"`
+	DeviceKey string `json:"device_key"`
+}
+
+func (d *DeviceClaims) Valid() error {
+	return nil
+}
+
+type Interface interface {
+	Generate(jwt.Claims) (string, error)
+	GetSecret() string
+}
+
+type Model struct {
+	*env.Env
+}
+
+func (m *Model) Generate(claims jwt.Claims) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(m.GetSecret()))
 }
 
 // TODO: split out token claim extraction for usage in ws server (getting email when authing)
@@ -91,5 +122,3 @@ func VerifyMiddleware(env *env.Env) gin.HandlerFunc {
 		c.Next()
 	}
 }
-
-// TODO: make generic version of JWT endpoint for user and device, then specialize

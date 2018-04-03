@@ -24,7 +24,6 @@ type Interface interface {
 	// context.Context is an interface, so it shouldn't be a pointer anyway
 	GetByEmail(string, context.Context) (*User, error)
 	Create(string, string, context.Context) error
-	GetSecret() string
 }
 
 type Model struct {
