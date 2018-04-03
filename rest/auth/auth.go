@@ -72,9 +72,11 @@ func Login(aModel auth.Interface, uModel user.Interface) func(c *gin.Context) {
 
 		var tokenStr string
 		tokenStr, err = aModel.Generate(&auth.UserClaims{
-			Type:      auth.UserType,
-			UserKey:   u.Key.Encode(),
-			ExpiresAt: time.Now().AddDate(1, 0, 0).Unix(),
+			Type:    auth.UserType,
+			UserKey: u.Key.Encode(),
+			StandardClaims: jwt.StandardClaims{
+				ExpiresAt: time.Now().AddDate(1, 0, 0).Unix(),
+			},
 		})
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{

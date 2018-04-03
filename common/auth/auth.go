@@ -19,20 +19,12 @@ const (
 )
 
 type UserClaims struct {
-	Type      string `json:"type"`
-	UserKey   string `json:"user_key"`
-	ExpiresAt int64  `json:"exp"`
+	Type    string `json:"type"`
+	UserKey string `json:"user_key"`
+	jwt.StandardClaims
 }
 
-func (u *UserClaims) Valid() error {
-	now := time.Now().Unix()
-
-	if u.ExpiresAt != 0 && now > u.ExpiresAt {
-		return fmt.Errorf("Token is expired")
-	}
-
-	return nil
-}
+func (u *UserClaims) Valid() error { return nil }
 
 type DeviceClaims struct {
 	Type      string `json:"type"`
@@ -40,9 +32,7 @@ type DeviceClaims struct {
 	DeviceKey string `json:"device_key"`
 }
 
-func (d *DeviceClaims) Valid() error {
-	return nil
-}
+func (d *DeviceClaims) Valid() error { return nil }
 
 type Interface interface {
 	Generate(jwt.Claims) (string, error)
@@ -93,12 +83,49 @@ func Verify(tokenString string, env *env.Env) error {
 	return nil
 }
 
-// TODO: Generate
+func (m *Model) Decode(tString string, claims jwt.Claims) (*jwt.Token, error) {
+	// TODO: doesn't the claims object passed here just get populated automatically?
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
 
-// Note: these all verify that the token is valid as well
-// TODO: Decode
-// TODO: DecodeUser
-// TODO: DecodeDevice
+		return []byte(m.GetSecret()), nil
+	})
+	if err != nil || !token.Valid {
+		return nil, fmt.Errorf("Invalid token: %v", err)
+	}
+
+	return token, nil
+}
+
+func (m *Model) DecodeUser(tString string) (*UserClaims, error) {
+	token, err := Decode(tString, &UserClaims{})
+	if err != nil {
+		return nil, fmt.Errorf("Unable to decode UserClaims: %v", err)
+	}
+
+	claims, ok := token.Claims.(*UserClaims)
+	if !ok {
+		return nil, fmt.Errorf("Claims weren't of type UserClaims")
+	}
+
+	return claims, nil
+}
+
+func (m *Model) DecodeDevice(tString string) (*DeviceClaims, error) {
+	token, err := Decode(tString, &DeviceClaims{})
+	if err != nil {
+		return nil, fmt.Errorf("Unable to decode DeviceClaims: %v", err)
+	}
+
+	claims, ok := token.Claims.(*DeviceClaims)
+	if !ok {
+		return nil, fmt.Errorf("Claims weren't of type DeviceClaims")
+	}
+
+	return claims, nil
+}
 
 // TODO: UserMiddleware - checks for expiration date
 // TODO: DeviceMiddleware
