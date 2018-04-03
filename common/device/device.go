@@ -67,7 +67,7 @@ func (m *Model) Create(u *user.User, name string, ctx context.Context) (*Device,
 	return e, nil
 }
 
-func (m *Model) CreateTemp(ctx context.Context, k *datastore.Key, t *Temp) error {
+func (m *Model) CreateTemp(ctx context.Context, k *datastore.Key, t Temp) error {
 	var d Device
 
 	err := m.Get(ctx, k, &d)

@@ -101,3 +101,36 @@ func Create(uModel user.Interface, dModel device.Interface, aModel auth.Interfac
 		})
 	}
 }
+
+type TempInput struct {
+	Time int64 `json:"time" binding:"required"`
+	Temp int   `json:"temp" binding:"required"`
+}
+
+func Temp(dModel device.Interface, aModel auth.Interface) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		var (
+			err  error
+			json TempInput
+		)
+
+		// Binding data
+
+		err = c.BindJSON(&json)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"message": fmt.Sprintf("Invald input: %v", err),
+			})
+			return
+		}
+
+		// Decoding JSON
+
+		// dClaims := auth.GetDevice(c)
+
+		// TODO: Save temp to device
+		// TODO: Push temp to user
+
+		c.Status(http.StatusOK)
+	}
+}

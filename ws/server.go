@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/NilsG-S/antifreeze-back-end/common"
+	// "github.com/NilsG-S/antifreeze-back-end/common/device"
 )
 
 const (
@@ -33,8 +34,9 @@ type Server struct {
 	// by email to all connected user clients
 	// when updating, send to all of these
 	emailToUsers map[string]map[*user]bool
-	register     chan *user
-	unregister   chan *user
+	// usersByKey   map[string]map[*user]bool
+	register   chan *user
+	unregister chan *user
 }
 
 func NewServer() *Server {
@@ -102,6 +104,11 @@ func (s *Server) POSTDeviceHistory(mes common.Temperature) {
 		k.send <- mes
 	}
 }
+
+// func (s *Server) PushTemp(userKey, deviceKey string, t device.Temp) {
+// 	// TODO: move message to WS
+// 	return
+// }
 
 func (s *Server) POSTUserDevices(id int, email string) {
 	s.deviceToUser[id] = email

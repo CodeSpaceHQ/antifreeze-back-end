@@ -13,7 +13,6 @@ import (
 	"cloud.google.com/go/datastore"
 	"github.com/gin-gonic/gin"
 
-	"github.com/NilsG-S/antifreeze-back-end/common"
 	"github.com/NilsG-S/antifreeze-back-end/common/env"
 	authRoutes "github.com/NilsG-S/antifreeze-back-end/rest/auth"
 	dRoutes "github.com/NilsG-S/antifreeze-back-end/rest/device"
@@ -128,22 +127,5 @@ func routes(router *gin.Engine, env *env.Env) {
 
 	router.GET("/ws", func(c *gin.Context) {
 		env.Register(c.Writer, c.Request)
-	})
-
-	router.POST("/user/devices", func(c *gin.Context) {
-		// TODO: This is a stopgap
-		env.POSTUserDevices(1, "test@ttu.edu")
-	})
-
-	router.POST("/device/history", func(c *gin.Context) {
-		mes := common.Temperature{
-			Sub:      "/device/history",
-			Op:       common.Add,
-			DeviceID: 1,
-			Temp:     32,
-			Time:     time.Now(),
-		}
-
-		env.POSTDeviceHistory(mes)
 	})
 }
