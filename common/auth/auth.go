@@ -50,6 +50,7 @@ func (m *Model) Generate(claims jwt.Claims) (string, error) {
 
 func (m *Model) Decode(tString string, claims jwt.Claims) (*jwt.Token, error) {
 	// TODO: doesn't the claims object passed here just get populated automatically?
+	// TODO: in that vein, should these functions return pointers or actual structs?
 	token, err := jwt.ParseWithClaims(tString, claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
@@ -138,11 +139,13 @@ func GetUser(c *gin.Context) *UserClaims {
 	claims, exists := c.Get(ClaimsKey)
 	if !exists {
 		fmt.Println("Programmer Error (GetUser): claims not present")
+		return nil
 	}
 
 	uClaims, ok := claims.(*UserClaims)
 	if !ok {
 		fmt.Println("Programmer Error (GetUser): claims should be *UserClaims")
+		return nil
 	}
 
 	return uClaims
@@ -152,11 +155,13 @@ func GetDevice(c *gin.Context) *DeviceClaims {
 	claims, exists := c.Get(ClaimsKey)
 	if !exists {
 		fmt.Println("Programmer Error (GetDevice): claims not present")
+		return nil
 	}
 
 	dClaims, ok := claims.(*DeviceClaims)
 	if !ok {
 		fmt.Println("Programmer Error (GetDevice): claims should be *DeviceClaims")
+		return nil
 	}
 
 	return dClaims

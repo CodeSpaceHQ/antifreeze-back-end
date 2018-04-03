@@ -66,3 +66,31 @@ func (m *Model) Create(u *user.User, name string, ctx context.Context) (*Device,
 
 	return e, nil
 }
+
+func (m *Model) CreateTemp(ctx context.Context, k *datastore.Key, t *Temp) error {
+	var d Device
+
+	err := m.Get(ctx, k, &d)
+	if err != nil {
+		return fmt.Errorf("Key didn't match an existing entity: %v", err)
+	}
+
+	if d.History == nil {
+		d.History = make([]Temp, 0, 1)
+	}
+	// TODO: this is pretty inefficient. Find another way of storing this data?
+	// Push front
+	d.History = append([]Temp{t}, d.History...)
+
+	// Remove old temperatures
+	if d.History[len(d.History)-1].Date.Unix() < time.Now().AddDate(0, 0, -14).Unix() {
+		d.History = d.History[:len(d.History)-1]
+	}
+
+	_, err = m.Mutate(ctx, datastore.NewUpdate(d.Key, d))
+	if err != nil {
+		return fmt.Errorf("Couldn't store new temperature: %v", err)
+	}
+
+	return nil
+}
