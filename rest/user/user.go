@@ -7,13 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/NilsG-S/antifreeze-back-end/common/env"
-	"github.com/NilsG-S/antifreeze-back-end/common/user"
 )
 
-func Apply(route *gin.RouterGroup, env *env.Env) {
-	model := &user.Model{Env: env}
-
-	route.POST("/create", Create(model))
+func Apply(route *gin.RouterGroup, env env.Env) {
+	route.POST("/create", Create(env))
 }
 
 type CreateInput struct {
@@ -21,11 +18,12 @@ type CreateInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func Create(model user.Interface) func(c *gin.Context) {
+func Create(xEnv env.Env) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var (
-			err  error
-			json CreateInput
+			err   error
+			json  CreateInput
+			model env.UserModel = xEnv.GetUser()
 		)
 
 		err = c.BindJSON(&json)

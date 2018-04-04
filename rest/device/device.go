@@ -7,17 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/NilsG-S/antifreeze-back-end/common/auth"
-	"github.com/NilsG-S/antifreeze-back-end/common/device"
 	"github.com/NilsG-S/antifreeze-back-end/common/env"
 	"github.com/NilsG-S/antifreeze-back-end/common/user"
 )
 
-func Apply(route *gin.RouterGroup, env *env.Env) {
-	aModel := &auth.Model{Env: env}
-	dModel := &device.Model{Env: env}
-	uModel := &user.Model{Env: env}
-
-	route.POST("/create", Create(uModel, dModel, aModel))
+func Apply(route *gin.RouterGroup, env env.Env) {
+	route.POST("/create", Create(env))
 }
 
 type CreateInput struct {
@@ -26,11 +21,14 @@ type CreateInput struct {
 	Name     string `json:"name" binding:"required"`
 }
 
-func Create(uModel user.Interface, dModel device.Interface, aModel auth.Interface) func(c *gin.Context) {
+func Create(xEnv env.Env) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var (
-			err  error
-			json CreateInput
+			err    error
+			json   CreateInput
+			aModel env.AuthModel   = xEnv.GetAuth()
+			dModel env.DeviceModel = xEnv.GetDevice()
+			uModel env.UserModel   = xEnv.GetUser()
 		)
 
 		// Binding data
@@ -45,7 +43,7 @@ func Create(uModel user.Interface, dModel device.Interface, aModel auth.Interfac
 
 		// Getting user
 
-		var u *user.User
+		var u *env.User
 		u, err = uModel.GetByEmail(json.Email, c)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
@@ -72,7 +70,7 @@ func Create(uModel user.Interface, dModel device.Interface, aModel auth.Interfac
 
 		// Creating device
 
-		var d *device.Device
+		var d *env.Device
 		d, err = dModel.Create(u, json.Name, c)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
@@ -84,7 +82,7 @@ func Create(uModel user.Interface, dModel device.Interface, aModel auth.Interfac
 		// Making JWT
 
 		var tokenStr string
-		tokenStr, err = aModel.Generate(&auth.DeviceClaims{
+		tokenStr, err = aModel.Generate(&env.DeviceClaims{
 			Type:      auth.DeviceType,
 			UserKey:   u.Key.Encode(),
 			DeviceKey: d.Key.Encode(),
@@ -107,11 +105,13 @@ type TempInput struct {
 	Temp int   `json:"temp" binding:"required"`
 }
 
-func Temp(dModel device.Interface, aModel auth.Interface) func(c *gin.Context) {
+func Temp(xEnv env.Env) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var (
 			err  error
 			json TempInput
+			// aModel env.AuthModel   = xEnv.GetAuth()
+			// dModel env.DeviceModel = xEnv.GetDevice()
 		)
 
 		// Binding data

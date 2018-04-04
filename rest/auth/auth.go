@@ -13,11 +13,8 @@ import (
 	"github.com/NilsG-S/antifreeze-back-end/common/user"
 )
 
-func Apply(route *gin.RouterGroup, env *env.Env) {
-	aModel := &auth.Model{Env: env}
-	uModel := &user.Model{Env: env}
-
-	route.POST("/login", Login(aModel, uModel))
+func Apply(route *gin.RouterGroup, env env.Env) {
+	route.POST("/login", Login(env))
 }
 
 type LoginInput struct {
@@ -25,11 +22,13 @@ type LoginInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func Login(aModel auth.Interface, uModel user.Interface) func(c *gin.Context) {
+func Login(xEnv env.Env) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var (
-			err  error
-			json LoginInput
+			err    error
+			json   LoginInput
+			aModel env.AuthModel = xEnv.GetAuth()
+			uModel env.UserModel = xEnv.GetUser()
 		)
 
 		// Binding data
@@ -44,7 +43,7 @@ func Login(aModel auth.Interface, uModel user.Interface) func(c *gin.Context) {
 
 		// Getting user
 
-		var u *user.User
+		var u *env.User
 		u, err = uModel.GetByEmail(json.Email, c)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
@@ -72,7 +71,7 @@ func Login(aModel auth.Interface, uModel user.Interface) func(c *gin.Context) {
 		// Making JWT
 
 		var tokenStr string
-		tokenStr, err = aModel.Generate(&auth.UserClaims{
+		tokenStr, err = aModel.Generate(&env.UserClaims{
 			Type:    auth.UserType,
 			UserKey: u.Key.Encode(),
 			StandardClaims: jwt.StandardClaims{

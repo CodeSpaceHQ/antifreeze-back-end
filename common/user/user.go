@@ -11,30 +11,15 @@ import (
 	"github.com/NilsG-S/antifreeze-back-end/common/env"
 )
 
-// Make sure to handle case where no devices are present
-type User struct {
-	Key      *datastore.Key   `datastore:"__key__"`
-	Email    string           `datastore:"email"`
-	Password string           `datastore:"password,noindex"`
-	Devices  []*datastore.Key `datastore:"devices,noindex"`
-}
-
-// In case we want to mock the model for unit tests
-type Interface interface {
-	// context.Context is an interface, so it shouldn't be a pointer anyway
-	GetByEmail(string, context.Context) (*User, error)
-	Create(string, string, context.Context) error
-}
-
 type Model struct {
-	*env.Env
+	env.Env
 }
 
-func (m *Model) GetByEmail(email string, ctx context.Context) (*User, error) {
-	var u User
+func (m *Model) GetByEmail(email string, ctx context.Context) (*env.User, error) {
+	var u env.User
 
 	q := datastore.NewQuery("User").Filter("email =", email)
-	t := m.Run(ctx, q)
+	t := m.GetClient().Run(ctx, q)
 	_, err := t.Next(&u)
 
 	if err == iterator.Done {
@@ -63,12 +48,12 @@ func (m *Model) Create(email, password string, ctx context.Context) error {
 	}
 
 	k := datastore.IncompleteKey("User", nil)
-	e := &User{
+	e := &env.User{
 		Email:    email,
 		Password: hash,
 	}
 
-	_, err = m.Put(ctx, k, e)
+	_, err = m.GetClient().Put(ctx, k, e)
 	if err != nil {
 		return fmt.Errorf("Couldn't put new user in Datastore, %v", err)
 	}

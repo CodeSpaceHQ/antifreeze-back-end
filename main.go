@@ -13,10 +13,12 @@ import (
 	"cloud.google.com/go/datastore"
 	"github.com/gin-gonic/gin"
 
-	"github.com/NilsG-S/antifreeze-back-end/common/env"
-	authRoutes "github.com/NilsG-S/antifreeze-back-end/rest/auth"
+	aCommon "github.com/NilsG-S/antifreeze-back-end/common/auth"
+	dCommon "github.com/NilsG-S/antifreeze-back-end/common/device"
+	uCommon "github.com/NilsG-S/antifreeze-back-end/common/user"
+	aRoutes "github.com/NilsG-S/antifreeze-back-end/rest/auth"
 	dRoutes "github.com/NilsG-S/antifreeze-back-end/rest/device"
-	userRoutes "github.com/NilsG-S/antifreeze-back-end/rest/user"
+	uRoutes "github.com/NilsG-S/antifreeze-back-end/rest/user"
 	"github.com/NilsG-S/antifreeze-back-end/ws"
 )
 
@@ -77,12 +79,18 @@ func main() {
 
 	// Setting up server "environment"
 
-	env := &env.Env{
+	env := &Env{
 		Client: cli,
 		Logger: logger,
-		Server: server,
+
+		WS: server,
+
 		Secret: os.Getenv("ANTIFREEZE_SECRET"),
 	}
+
+	env.Auth = &aCommon.Model{Env: env}
+	env.Device = &dCommon.Model{Env: env}
+	env.User = &uCommon.Model{Env: env}
 
 	// Setting up routes
 
@@ -99,7 +107,7 @@ func main() {
 	return
 }
 
-func routes(router *gin.Engine, env *env.Env) {
+func routes(router *gin.Engine, env *Env) {
 	// TODO: Add a NoRoute handler
 
 	// # RESTful routes
@@ -109,12 +117,12 @@ func routes(router *gin.Engine, env *env.Env) {
 	// ## User routes
 
 	user := rest.Group("/user")
-	userRoutes.Apply(user, env)
+	uRoutes.Apply(user, env)
 
 	// ## Auth routes
 
 	auth := rest.Group("/auth")
-	authRoutes.Apply(auth, env)
+	aRoutes.Apply(auth, env)
 
 	// ## Device routes
 
@@ -126,6 +134,6 @@ func routes(router *gin.Engine, env *env.Env) {
 	router.StaticFile("/", "home.html")
 
 	router.GET("/ws", func(c *gin.Context) {
-		env.Register(c.Writer, c.Request)
+		env.GetWS().Register(c.Writer, c.Request)
 	})
 }

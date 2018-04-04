@@ -18,29 +18,8 @@ const (
 	ClaimsKey               = "claims"
 )
 
-type UserClaims struct {
-	Type    string `json:"type"`
-	UserKey string `json:"user_key"`
-	jwt.StandardClaims
-}
-
-func (u *UserClaims) Valid() error { return nil }
-
-type DeviceClaims struct {
-	Type      string `json:"type"`
-	UserKey   string `json:"user_key"`
-	DeviceKey string `json:"device_key"`
-}
-
-func (d *DeviceClaims) Valid() error { return nil }
-
-type Interface interface {
-	Generate(jwt.Claims) (string, error)
-	GetSecret() string
-}
-
 type Model struct {
-	*env.Env
+	env.Env
 }
 
 func (m *Model) Generate(claims jwt.Claims) (string, error) {
@@ -66,13 +45,13 @@ func (m *Model) Decode(tString string, claims jwt.Claims) (*jwt.Token, error) {
 }
 
 // Pretty sure this already checks for token expiration
-func (m *Model) DecodeUser(tString string) (*UserClaims, error) {
-	token, err := m.Decode(tString, &UserClaims{})
+func (m *Model) DecodeUser(tString string) (*env.UserClaims, error) {
+	token, err := m.Decode(tString, &env.UserClaims{})
 	if err != nil {
 		return nil, fmt.Errorf("Unable to decode UserClaims: %v", err)
 	}
 
-	claims, ok := token.Claims.(*UserClaims)
+	claims, ok := token.Claims.(*env.UserClaims)
 	if !ok {
 		return nil, fmt.Errorf("Claims weren't of type UserClaims")
 	}
@@ -80,13 +59,13 @@ func (m *Model) DecodeUser(tString string) (*UserClaims, error) {
 	return claims, nil
 }
 
-func (m *Model) DecodeDevice(tString string) (*DeviceClaims, error) {
-	token, err := m.Decode(tString, &DeviceClaims{})
+func (m *Model) DecodeDevice(tString string) (*env.DeviceClaims, error) {
+	token, err := m.Decode(tString, &env.DeviceClaims{})
 	if err != nil {
 		return nil, fmt.Errorf("Unable to decode DeviceClaims: %v", err)
 	}
 
-	claims, ok := token.Claims.(*DeviceClaims)
+	claims, ok := token.Claims.(*env.DeviceClaims)
 	if !ok {
 		return nil, fmt.Errorf("Claims weren't of type DeviceClaims")
 	}
@@ -95,9 +74,9 @@ func (m *Model) DecodeDevice(tString string) (*DeviceClaims, error) {
 }
 
 // Middleware for usage in Gin
-func UserMiddleware(env *env.Env) gin.HandlerFunc {
+func UserMiddleware(env env.Env) gin.HandlerFunc {
 	// TODO: Add scope checker for tokens? Long term, if ever
-	model := Model{Env: env}
+	model := env.GetAuth()
 
 	return func(c *gin.Context) {
 		// MUST PUT TOKEN IN `Authorization` HEADER
@@ -116,8 +95,8 @@ func UserMiddleware(env *env.Env) gin.HandlerFunc {
 	}
 }
 
-func DeviceMiddleware(env *env.Env) gin.HandlerFunc {
-	model := Model{Env: env}
+func DeviceMiddleware(env env.Env) gin.HandlerFunc {
+	model := env.GetAuth()
 
 	return func(c *gin.Context) {
 		token := strings.Split(c.Request.Header.Get("Authorization"), " ")[1]
@@ -135,14 +114,14 @@ func DeviceMiddleware(env *env.Env) gin.HandlerFunc {
 	}
 }
 
-func GetUser(c *gin.Context) *UserClaims {
+func GetUser(c *gin.Context) *env.UserClaims {
 	claims, exists := c.Get(ClaimsKey)
 	if !exists {
 		fmt.Println("Programmer Error (GetUser): claims not present")
 		return nil
 	}
 
-	uClaims, ok := claims.(*UserClaims)
+	uClaims, ok := claims.(*env.UserClaims)
 	if !ok {
 		fmt.Println("Programmer Error (GetUser): claims should be *UserClaims")
 		return nil
@@ -151,14 +130,14 @@ func GetUser(c *gin.Context) *UserClaims {
 	return uClaims
 }
 
-func GetDevice(c *gin.Context) *DeviceClaims {
+func GetDevice(c *gin.Context) *env.DeviceClaims {
 	claims, exists := c.Get(ClaimsKey)
 	if !exists {
 		fmt.Println("Programmer Error (GetDevice): claims not present")
 		return nil
 	}
 
-	dClaims, ok := claims.(*DeviceClaims)
+	dClaims, ok := claims.(*env.DeviceClaims)
 	if !ok {
 		fmt.Println("Programmer Error (GetDevice): claims should be *DeviceClaims")
 		return nil
