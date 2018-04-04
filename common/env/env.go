@@ -1,3 +1,4 @@
+// NOTE: This file should never import anything from inside this project
 package env
 
 import (
