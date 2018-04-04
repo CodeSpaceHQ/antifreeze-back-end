@@ -110,6 +110,9 @@ func main() {
 func routes(router *gin.Engine, env *Env) {
 	// TODO: Add a NoRoute handler
 
+	// TODO: Remove this once a real front-end exists
+	router.StaticFile("/", "home.html")
+
 	// # RESTful routes
 
 	rest := router.Group("/rest")
@@ -129,9 +132,7 @@ func routes(router *gin.Engine, env *Env) {
 	device := rest.Group("/device")
 	dRoutes.Apply(device, env)
 
-	// Old routes
-
-	router.StaticFile("/", "home.html")
+	// * WebSocket routes
 
 	router.GET("/ws", func(c *gin.Context) {
 		env.GetWS().Register(c.Writer, c.Request)

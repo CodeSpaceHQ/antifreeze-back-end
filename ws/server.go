@@ -6,7 +6,8 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	// "github.com/NilsG-S/antifreeze-back-end/common/device"
+
+	"github.com/NilsG-S/antifreeze-back-end/common/env"
 )
 
 const (
@@ -27,24 +28,19 @@ var (
 )
 
 type Server struct {
-	// by deviceId to email
-	deviceToUser map[int]string
-	// by email to all connected user clients
+	// by user encoding to all connected user clients
 	// when updating, send to all of these
-	emailToUsers map[string]map[*user]bool
-	// usersByKey   map[string]map[*user]bool
+	usersByKey map[string]map[*user]bool
 	register   chan *user
 	unregister chan *user
 }
 
+// TODO: This function may not be necessary
 func NewServer() *Server {
-	// TODO: get users from db on init?
-
 	return &Server{
-		deviceToUser: make(map[int]string),
-		emailToUsers: make(map[string]map[*user]bool),
-		register:     make(chan *user),
-		unregister:   make(chan *user),
+		usersByKey: make(map[string]map[*user]bool),
+		register:   make(chan *user),
+		unregister: make(chan *user),
 	}
 }
 
@@ -53,14 +49,14 @@ func (s *Server) RunServer() {
 	for {
 		select {
 		case u := <-s.register:
-			if s.emailToUsers[u.email] == nil {
-				s.emailToUsers[u.email] = make(map[*user]bool)
+			if s.usersByKey[u.key] == nil {
+				s.usersByKey[u.key] = make(map[*user]bool)
 			}
 
-			s.emailToUsers[u.email][u] = true
+			s.usersByKey[u.key][u] = true
 		case user := <-s.unregister:
-			if _, ok := s.emailToUsers[user.email][user]; ok {
-				delete(s.emailToUsers[user.email], user)
+			if _, ok := s.usersByKey[user.key][user]; ok {
+				delete(s.usersByKey[user.key], user)
 				close(user.send)
 			}
 		}
@@ -77,7 +73,8 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 	user := &user{
 		server: s,
 		// TODO: This is a stopgap. Replace with authentication
-		email: "test@ttu.edu",
+		// For now, you can only get this value by printing the contents of the device JWT
+		key:   "Eg8KBFVzZXIQgICAgIDkkQo",
 		perms: unauthed,
 		conn:  conn,
 		// channel of length 256
@@ -91,25 +88,18 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 	go user.readUser()
 }
 
-func (s *Server) POSTDeviceHistory(mes Temperature) {
-	id := mes.DeviceID
-	email, ok := s.deviceToUser[id]
-	if !ok {
-		return
+func (s *Server) PushTemp(userKey, deviceKey string, t env.Temp) {
+	mes := Temperature{
+		Sub:       "/device/history",
+		Op:        Add,
+		DeviceKey: deviceKey,
+		Temp:      t.Value,
+		Date:      t.Date.Unix(),
 	}
 
-	for k, _ := range s.emailToUsers[email] {
+	for k, _ := range s.usersByKey[userKey] {
 		k.send <- mes
 	}
-}
-
-// func (s *Server) PushTemp(userKey, deviceKey string, t device.Temp) {
-// 	// TODO: move message to WS
-// 	return
-// }
-
-func (s *Server) POSTUserDevices(id int, email string) {
-	s.deviceToUser[id] = email
 }
 
 // Add functions to inject temperatures, devices, etc. into the server.

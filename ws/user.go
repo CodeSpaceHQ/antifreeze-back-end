@@ -31,7 +31,7 @@ var (
 
 type user struct {
 	server *Server
-	email  string
+	key    string
 	perms  *perms
 	// used to decide whether to send information
 	// technically not necessay under the current proposal
