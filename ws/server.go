@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-
-	"github.com/NilsG-S/antifreeze-back-end/common"
 	// "github.com/NilsG-S/antifreeze-back-end/common/device"
 )
 
@@ -83,7 +81,7 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 		perms: unauthed,
 		conn:  conn,
 		// channel of length 256
-		send: make(chan common.Message, 256),
+		send: make(chan Message, 256),
 	}
 
 	s.register <- user
@@ -93,7 +91,7 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 	go user.readUser()
 }
 
-func (s *Server) POSTDeviceHistory(mes common.Temperature) {
+func (s *Server) POSTDeviceHistory(mes Temperature) {
 	id := mes.DeviceID
 	email, ok := s.deviceToUser[id]
 	if !ok {

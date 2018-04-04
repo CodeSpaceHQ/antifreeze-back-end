@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-
-	"github.com/NilsG-S/antifreeze-back-end/common"
 )
 
 // TODO(NilsG-S): could permissions and subscriptions be their own structs?
@@ -39,7 +37,7 @@ type user struct {
 	// technically not necessay under the current proposal
 	// subs map[string]bool
 	conn *websocket.Conn
-	send chan common.Message
+	send chan Message
 }
 
 func (u *user) writeUser() {

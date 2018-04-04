@@ -1,5 +1,4 @@
-// Consider moving this file to a `common` directory, since it'll be used by `rest` and `ws`
-package common
+package ws
 
 import (
 	"time"
