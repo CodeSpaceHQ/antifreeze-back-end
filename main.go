@@ -13,10 +13,12 @@ import (
 	"cloud.google.com/go/datastore"
 	"github.com/gin-gonic/gin"
 
-	"github.com/NilsG-S/antifreeze-back-end/common"
-	"github.com/NilsG-S/antifreeze-back-end/common/env"
-	authRoutes "github.com/NilsG-S/antifreeze-back-end/rest/auth"
-	userRoutes "github.com/NilsG-S/antifreeze-back-end/rest/user"
+	aCommon "github.com/NilsG-S/antifreeze-back-end/common/auth"
+	dCommon "github.com/NilsG-S/antifreeze-back-end/common/device"
+	uCommon "github.com/NilsG-S/antifreeze-back-end/common/user"
+	aRoutes "github.com/NilsG-S/antifreeze-back-end/rest/auth"
+	dRoutes "github.com/NilsG-S/antifreeze-back-end/rest/device"
+	uRoutes "github.com/NilsG-S/antifreeze-back-end/rest/user"
 	"github.com/NilsG-S/antifreeze-back-end/ws"
 )
 
@@ -77,12 +79,18 @@ func main() {
 
 	// Setting up server "environment"
 
-	env := &env.Env{
+	env := &Env{
 		Client: cli,
 		Logger: logger,
-		Server: server,
+
+		WS: server,
+
 		Secret: os.Getenv("ANTIFREEZE_SECRET"),
 	}
+
+	env.Auth = &aCommon.Model{Env: env}
+	env.Device = &dCommon.Model{Env: env}
+	env.User = &uCommon.Model{Env: env}
 
 	// Setting up routes
 
@@ -99,8 +107,11 @@ func main() {
 	return
 }
 
-func routes(router *gin.Engine, env *env.Env) {
+func routes(router *gin.Engine, env *Env) {
 	// TODO: Add a NoRoute handler
+
+	// TODO: Remove this once a real front-end exists
+	router.StaticFile("/", "home.html")
 
 	// # RESTful routes
 
@@ -109,35 +120,21 @@ func routes(router *gin.Engine, env *env.Env) {
 	// ## User routes
 
 	user := rest.Group("/user")
-	userRoutes.Apply(user, env)
+	uRoutes.Apply(user, env)
 
 	// ## Auth routes
 
 	auth := rest.Group("/auth")
-	authRoutes.Apply(auth, env)
+	aRoutes.Apply(auth, env)
 
-	// Old routes
+	// ## Device routes
 
-	router.StaticFile("/", "home.html")
+	device := rest.Group("/device")
+	dRoutes.Apply(device, env)
+
+	// * WebSocket routes
 
 	router.GET("/ws", func(c *gin.Context) {
-		env.Register(c.Writer, c.Request)
-	})
-
-	router.POST("/user/devices", func(c *gin.Context) {
-		// TODO: This is a stopgap
-		env.POSTUserDevices(1, "test@ttu.edu")
-	})
-
-	router.POST("/device/history", func(c *gin.Context) {
-		mes := common.Temperature{
-			Sub:      "/device/history",
-			Op:       common.Add,
-			DeviceID: 1,
-			Temp:     32,
-			Time:     time.Now(),
-		}
-
-		env.POSTDeviceHistory(mes)
+		env.GetWS().Register(c.Writer, c.Request)
 	})
 }

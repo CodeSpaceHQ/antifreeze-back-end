@@ -11,53 +11,26 @@ import (
 	"github.com/NilsG-S/antifreeze-back-end/common/env"
 )
 
-// Make sure to handle case where no devices are present
-type User struct {
-	Email    string `datastore:"email"`
-	Password string `datastore:"password,noindex"`
-	Devices  []int  `datastore:"devices,noindex"`
-}
-
-// In case we want to mock the model for unit tests
-type Interface interface {
-	// context.Context is an interface, so it shouldn't be a pointer anyway
-	GetByEmail(string, context.Context) (*User, error)
-	Create(string, string, context.Context) error
-	GetSecret() string
-}
-
 type Model struct {
-	*env.Env
+	env.Env
 }
 
-func (m *Model) GetByEmail(email string, ctx context.Context) (*User, error) {
-	results := make([]*User, 0, 1)
+func (m *Model) GetByEmail(email string, ctx context.Context) (*env.User, error) {
+	var u env.User
 
 	q := datastore.NewQuery("User").Filter("email =", email)
-	t := m.Run(ctx, q)
-	for {
-		var u User
-		_, err := t.Next(&u)
-		if err == iterator.Done {
-			break
-		}
+	t := m.GetClient().Run(ctx, q)
+	_, err := t.Next(&u)
 
-		if err != nil {
-			return nil, fmt.Errorf("Error when iterating GetByEmail query: %v", err)
-		}
-
-		results = append(results, &u)
-	}
-
-	if len(results) > 1 {
-		return nil, fmt.Errorf("GetByEmail returned more than one user")
-	}
-	// If no user was found
-	if len(results) == 0 {
+	if err == iterator.Done {
 		return nil, nil
 	}
 
-	return results[0], nil
+	if err != nil {
+		return nil, fmt.Errorf("Error when iterating GetByEmail query: %v", err)
+	}
+
+	return &u, nil
 }
 
 func (m *Model) Create(email, password string, ctx context.Context) error {
@@ -75,12 +48,12 @@ func (m *Model) Create(email, password string, ctx context.Context) error {
 	}
 
 	k := datastore.IncompleteKey("User", nil)
-	e := &User{
+	e := &env.User{
 		Email:    email,
 		Password: hash,
 	}
 
-	_, err = m.Put(ctx, k, e)
+	_, err = m.GetClient().Put(ctx, k, e)
 	if err != nil {
 		return fmt.Errorf("Couldn't put new user in Datastore, %v", err)
 	}

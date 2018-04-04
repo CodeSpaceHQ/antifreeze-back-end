@@ -31,6 +31,9 @@ ANTIFREEZE_SECRET=example
     - First run and runs after dependency changes take way longer
 4. Target `0.0.0.0:8081` when using Postman to make requests
 
+Note:
+- The error "The system cannot find the file specified." can indicate that docker hasn't been started.
+
 ### Deploying
 
 1. Change directories to `${project_path}/deploy/terraform`

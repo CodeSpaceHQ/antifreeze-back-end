@@ -1,9 +1,4 @@
-// Consider moving this file to a `common` directory, since it'll be used by `rest` and `ws`
-package common
-
-import (
-	"time"
-)
+package ws
 
 const (
 	Add    int = 1
@@ -18,11 +13,11 @@ type Message interface {
 }
 
 type Temperature struct {
-	Sub      string
-	Op       int
-	DeviceID int
-	Temp     int
-	Time     time.Time
+	Sub       string
+	Op        int
+	DeviceKey string
+	Temp      int
+	Date      int64
 }
 
 func (v Temperature) GetSub() string { return v.Sub }

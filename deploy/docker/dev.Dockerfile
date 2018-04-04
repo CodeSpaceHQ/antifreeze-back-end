@@ -18,7 +18,7 @@ RUN make && mv bin/antifreeze-back-end /bin/antifreeze
 FROM ubuntu:16.04
 
 # `db` references the database emulator
-ENV DATASTORE_EMULATOR_HOST=db:8082 DATASTORE_PROJECT_ID=antifreezedev
+ENV DATASTORE_EMULATOR_HOST=db:8082 DATASTORE_PROJECT_ID=antifreezedev ANTIFREEZE_SECRET=test
 
 # Note that this method doesn't carry over any static files
 COPY --from=build /bin/antifreeze /bin/antifreeze

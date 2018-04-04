@@ -13,10 +13,8 @@ import (
 	"github.com/NilsG-S/antifreeze-back-end/common/user"
 )
 
-func Apply(route *gin.RouterGroup, env *env.Env) {
-	model := &user.Model{Env: env}
-
-	route.POST("/login", Login(model))
+func Apply(route *gin.RouterGroup, env env.Env) {
+	route.POST("/login", Login(env))
 }
 
 type LoginInput struct {
@@ -24,11 +22,13 @@ type LoginInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func Login(model user.Interface) func(c *gin.Context) {
+func Login(xEnv env.Env) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var (
-			err  error
-			json LoginInput
+			err    error
+			json   LoginInput
+			aModel env.AuthModel = xEnv.GetAuth()
+			uModel env.UserModel = xEnv.GetUser()
 		)
 
 		// Binding data
@@ -43,8 +43,8 @@ func Login(model user.Interface) func(c *gin.Context) {
 
 		// Getting user
 
-		var u *user.User
-		u, err = model.GetByEmail(json.Email, c)
+		var u *env.User
+		u, err = uModel.GetByEmail(json.Email, c)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"message": fmt.Sprintf("Couldn't find user: %v", err),
@@ -70,15 +70,14 @@ func Login(model user.Interface) func(c *gin.Context) {
 
 		// Making JWT
 
-		// TODO: Consider adding type claim for device vs user
-		exp := time.Now().AddDate(1, 0, 0).Unix()
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"exp":   exp,
-			"email": json.Email,
-		})
-
 		var tokenStr string
-		tokenStr, err = token.SignedString([]byte(model.GetSecret()))
+		tokenStr, err = aModel.Generate(&env.UserClaims{
+			Type:    auth.UserType,
+			UserKey: u.Key.Encode(),
+			StandardClaims: jwt.StandardClaims{
+				ExpiresAt: time.Now().AddDate(1, 0, 0).Unix(),
+			},
+		})
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"message": fmt.Sprintf("Unable to generate token: %v", err),
@@ -86,6 +85,7 @@ func Login(model user.Interface) func(c *gin.Context) {
 			return
 		}
 
+		// TODO: Add fully populated user with devices
 		c.JSON(http.StatusOK, gin.H{
 			"token": tokenStr,
 		})
