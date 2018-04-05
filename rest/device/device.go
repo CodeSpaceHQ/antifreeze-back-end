@@ -126,9 +126,8 @@ func Temp(xEnv env.Env) func(c *gin.Context) {
 			return
 		}
 
-		// Saving temp
+		// Decoding JWT
 
-		// Decoding JSON
 		dClaims := auth.GetDevice(c)
 
 		var dKey *datastore.Key
@@ -140,8 +139,9 @@ func Temp(xEnv env.Env) func(c *gin.Context) {
 			return
 		}
 
+		// Saving temp
+
 		newT := env.Temp{
-			// TODO: make sure this works to convert Unix time
 			Date:  time.Unix(json.Date, 0),
 			Value: json.Temp,
 		}

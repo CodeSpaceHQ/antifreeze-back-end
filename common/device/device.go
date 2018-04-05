@@ -66,7 +66,7 @@ func (m *Model) CreateTemp(ctx context.Context, k *datastore.Key, t env.Temp) er
 		d.History = d.History[:len(d.History)-1]
 	}
 
-	_, err = m.GetClient().Mutate(ctx, datastore.NewUpdate(d.Key, d))
+	_, err = m.GetClient().Mutate(ctx, datastore.NewUpdate(d.Key, &d))
 	if err != nil {
 		return fmt.Errorf("Couldn't store new temperature: %v", err)
 	}
