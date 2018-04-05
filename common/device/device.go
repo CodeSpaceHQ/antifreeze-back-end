@@ -2,6 +2,7 @@ package device
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -46,7 +47,7 @@ func (m *Model) Create(u *env.User, name string, ctx context.Context) (*env.Devi
 	return e, nil
 }
 
-func (m *Model) CreateTemp(ctx context.Context, k *datastore.Key, t env.Temp) error {
+func (m *Model) CreateTemp(ctx context.Context, k *datastore.Key, t *env.Temp) error {
 	var d env.Device
 
 	err := m.GetClient().Get(ctx, k, &d)
@@ -54,19 +55,31 @@ func (m *Model) CreateTemp(ctx context.Context, k *datastore.Key, t env.Temp) er
 		return fmt.Errorf("Key didn't match an existing entity: %v", err)
 	}
 
+	var bTemp []byte
+	bTemp, err = json.Marshal(t)
+	if err != nil {
+		return fmt.Errorf("Unable to marshal temp to JSON: %v", err)
+	}
+
 	if d.History == nil {
-		d.History = make([]env.Temp, 0, 1)
+		d.History = make([]string, 0, 1)
 	}
 	// TODO: this is pretty inefficient. Find another way of storing this data?
 	// Push front
-	d.History = append([]env.Temp{t}, d.History...)
+	d.History = append([]string{string(bTemp)}, d.History...)
+
+	last := &env.Temp{}
+	err = json.Unmarshal([]byte(d.History[len(d.History)-1]), last)
+	if err != nil {
+		return fmt.Errorf("Unable to unmarshal temp to struct: %v", err)
+	}
 
 	// Remove old temperatures
-	if d.History[len(d.History)-1].Date.Unix() < time.Now().AddDate(0, 0, -14).Unix() {
+	if last.Date < time.Now().AddDate(0, 0, -14).Unix() {
 		d.History = d.History[:len(d.History)-1]
 	}
 
-	_, err = m.GetClient().Mutate(ctx, datastore.NewUpdate(d.Key, d))
+	_, err = m.GetClient().Mutate(ctx, datastore.NewUpdate(d.Key, &d))
 	if err != nil {
 		return fmt.Errorf("Couldn't store new temperature: %v", err)
 	}

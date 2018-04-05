@@ -20,7 +20,7 @@ type AuthModel interface {
 // Methods for device model
 type DeviceModel interface {
 	Create(*User, string, context.Context) (*Device, error)
-	CreateTemp(ctx context.Context, key *datastore.Key, temp Temp) error
+	CreateTemp(ctx context.Context, key *datastore.Key, temp *Temp) error
 }
 
 // Methods for user model
@@ -34,7 +34,7 @@ type UserModel interface {
 type WS interface {
 	RunServer()
 	Register(w http.ResponseWriter, r *http.Request)
-	PushTemp(userKey, deviceKey string, temp Temp)
+	PushTemp(userKey, deviceKey string, temp *Temp)
 }
 
 type Env interface {

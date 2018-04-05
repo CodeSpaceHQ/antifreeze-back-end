@@ -88,13 +88,13 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 	go user.readUser()
 }
 
-func (s *Server) PushTemp(userKey, deviceKey string, t env.Temp) {
+func (s *Server) PushTemp(userKey, deviceKey string, t *env.Temp) {
 	mes := Temperature{
 		Sub:       "/device/history",
 		Op:        Add,
 		DeviceKey: deviceKey,
 		Temp:      t.Value,
-		Date:      t.Date.Unix(),
+		Date:      t.Date,
 	}
 
 	for k, _ := range s.usersByKey[userKey] {

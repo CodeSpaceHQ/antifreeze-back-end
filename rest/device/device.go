@@ -3,7 +3,6 @@ package device
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"cloud.google.com/go/datastore"
 	"github.com/gin-gonic/gin"
@@ -126,9 +125,8 @@ func Temp(xEnv env.Env) func(c *gin.Context) {
 			return
 		}
 
-		// Saving temp
+		// Decoding JWT
 
-		// Decoding JSON
 		dClaims := auth.GetDevice(c)
 
 		var dKey *datastore.Key
@@ -140,13 +138,14 @@ func Temp(xEnv env.Env) func(c *gin.Context) {
 			return
 		}
 
+		// Saving temp
+
 		newT := env.Temp{
-			// TODO: make sure this works to convert Unix time
-			Date:  time.Unix(json.Date, 0),
+			Date:  json.Date,
 			Value: json.Temp,
 		}
 
-		err = dModel.CreateTemp(c, dKey, newT)
+		err = dModel.CreateTemp(c, dKey, &newT)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"message": fmt.Sprintf("Unable to save temp in DB: %v", err),
@@ -154,7 +153,7 @@ func Temp(xEnv env.Env) func(c *gin.Context) {
 			return
 		}
 
-		xEnv.GetWS().PushTemp(dClaims.UserKey, dClaims.DeviceKey, newT)
+		xEnv.GetWS().PushTemp(dClaims.UserKey, dClaims.DeviceKey, &newT)
 
 		c.Status(http.StatusOK)
 	}
