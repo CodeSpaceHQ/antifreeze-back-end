@@ -1,6 +1,8 @@
 package env
 
 import (
+	"time"
+
 	"cloud.google.com/go/datastore"
 	"github.com/dgrijalva/jwt-go"
 )
@@ -26,8 +28,8 @@ func (d *DeviceClaims) Valid() error { return nil }
 // Device types
 
 type Temp struct {
-	Value int   `json:"value"`
-	Date  int64 `json:"date"`
+	Value int       `datastore:"value,noindex"`
+	Date  time.Time `datastore:"date,noindex"`
 }
 
 type Device struct {
@@ -35,7 +37,7 @@ type Device struct {
 	Name    string         `datastore:"name,noindex"`
 	Alarm   int            `datastore:"alarm,noindex"`
 	User    *datastore.Key `datastore:"user,noindex"`
-	History []string       `datastore:"history,noindex"`
+	History []Temp         `datastore:"history,noindex"`
 }
 
 // User types
