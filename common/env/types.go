@@ -35,7 +35,7 @@ type Temp struct {
 type Device struct {
 	Key     *datastore.Key `datastore:"__key__"`
 	Name    string         `datastore:"name,noindex"`
-	Alarm   int            `datastore:"alarm,noindex"`
+	Alarm   *int           `datastore:"alarm,noindex"`
 	User    *datastore.Key `datastore:"user,noindex"`
 	History []Temp         `datastore:"history,noindex"`
 }
