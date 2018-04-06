@@ -88,7 +88,7 @@ resource "kubernetes_pod" "pod" {
 
     container {
       # Make sure to keep this updated!
-      image = "nilsgs/antifreeze:4.0"
+      image = "nilsgs/antifreeze:5.0"
       name  = "antifreeze-container"
 
       # List of ports to expose
