@@ -27,6 +27,8 @@ type DeviceModel interface {
 type UserModel interface {
 	// context.Context is an interface, so it shouldn't be a pointer anyway
 	GetByEmail(string, context.Context) (*User, error)
+	GetByKey(ctx context.Context, key *datastore.Key) (*User, error)
+	GetDevices(ctx context.Context, user *User) ([]GetDevicesJSON, error)
 	Create(string, string, context.Context) error
 }
 
