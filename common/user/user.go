@@ -44,14 +44,23 @@ func (m *Model) GetByKey(ctx context.Context, key *datastore.Key) (*env.User, er
 	return &u, nil
 }
 
-func (m *Model) GetDevices(ctx context.Context, user *env.User) ([]env.Device, error) {
+func (m *Model) GetDevices(ctx context.Context, user *env.User) ([]env.GetDevicesJSON, error) {
 	devices := make([]env.Device, len(user.Devices))
 	err := m.GetClient().GetMulti(ctx, user.Devices, devices)
 	if err != nil {
 		return nil, fmt.Errorf("Couldn't get devices: %v", err)
 	}
 
-	return devices, nil
+	out := make([]env.GetDevicesJSON, len(user.Devices))
+	for i, v := range devices {
+		out[i] = env.GetDevicesJSON{
+			DeviceKey: v.Key.Encode(),
+			Name:      v.Name,
+			Alarm:     v.Alarm,
+		}
+	}
+
+	return out, nil
 }
 
 func (m *Model) Create(email, password string, ctx context.Context) error {

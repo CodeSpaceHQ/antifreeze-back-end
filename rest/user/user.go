@@ -82,7 +82,7 @@ func Devices(xEnv env.Env) func(c *gin.Context) {
 
 		// Get user devices
 
-		var d []env.Device
+		var d []env.GetDevicesJSON
 		d, err = uModel.GetDevices(c, u)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{

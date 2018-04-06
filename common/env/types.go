@@ -34,11 +34,17 @@ type Temp struct {
 }
 
 type Device struct {
-	Key     *datastore.Key `datastore:"__key__" json:"device_key"`
-	Name    string         `datastore:"name,noindex" json:"name"`
-	Alarm   *int           `datastore:"alarm,noindex" json:"alarm"`
-	User    *datastore.Key `datastore:"user,noindex" json:"user_key"`
-	History []Temp         `datastore:"history,noindex" json:"history"`
+	Key     *datastore.Key `datastore:"__key__"`
+	Name    string         `datastore:"name,noindex"`
+	Alarm   *int           `datastore:"alarm,noindex"`
+	User    *datastore.Key `datastore:"user,noindex"`
+	History []Temp         `datastore:"history,noindex"`
+}
+
+type GetDevicesJSON struct {
+	DeviceKey string `json:"device_key"`
+	Name      string `json:"name"`
+	Alarm     *int   `json:"alarm"`
 }
 
 // User types
