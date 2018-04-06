@@ -33,6 +33,11 @@ type Temp struct {
 	Date  time.Time `datastore:"date,noindex" json:"date"`
 }
 
+type GetTempsJSON struct {
+	Value int   `json:"temp"`
+	Date  int64 `json:"date"`
+}
+
 type Device struct {
 	Key     *datastore.Key `datastore:"__key__"`
 	Name    string         `datastore:"name,noindex"`
