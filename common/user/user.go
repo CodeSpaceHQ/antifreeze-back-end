@@ -33,6 +33,27 @@ func (m *Model) GetByEmail(email string, ctx context.Context) (*env.User, error)
 	return &u, nil
 }
 
+func (m *Model) GetByKey(ctx context.Context, key *datastore.Key) (*env.User, error) {
+	var u env.User
+
+	err := m.GetClient().Get(ctx, key, &u)
+	if err != nil {
+		return nil, fmt.Errorf("Key didn't match an existing user: %v", err)
+	}
+
+	return &u, nil
+}
+
+func (m *Model) GetDevices(ctx context.Context, user *env.User) ([]env.Device, error) {
+	devices := make([]env.Device, len(user.Devices))
+	err := m.GetClient().GetMulti(ctx, user.Devices, devices)
+	if err != nil {
+		return nil, fmt.Errorf("Couldn't get devices: %v", err)
+	}
+
+	return devices, nil
+}
+
 func (m *Model) Create(email, password string, ctx context.Context) error {
 	user, err := m.GetByEmail(email, ctx)
 	if err != nil {

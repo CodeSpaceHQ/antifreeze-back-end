@@ -27,17 +27,18 @@ func (d *DeviceClaims) Valid() error { return nil }
 
 // Device types
 
+// TODO: standardize naming of Value?
 type Temp struct {
-	Value int       `datastore:"value,noindex"`
-	Date  time.Time `datastore:"date,noindex"`
+	Value int       `datastore:"value,noindex" json:"temp"`
+	Date  time.Time `datastore:"date,noindex" json:"date"`
 }
 
 type Device struct {
-	Key     *datastore.Key `datastore:"__key__"`
-	Name    string         `datastore:"name,noindex"`
-	Alarm   *int           `datastore:"alarm,noindex"`
-	User    *datastore.Key `datastore:"user,noindex"`
-	History []Temp         `datastore:"history,noindex"`
+	Key     *datastore.Key `datastore:"__key__" json:"device_key"`
+	Name    string         `datastore:"name,noindex" json:"name"`
+	Alarm   *int           `datastore:"alarm,noindex" json:"alarm"`
+	User    *datastore.Key `datastore:"user,noindex" json:"user_key"`
+	History []Temp         `datastore:"history,noindex" json:"history"`
 }
 
 // User types
