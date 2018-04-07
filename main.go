@@ -130,6 +130,14 @@ func routes(router *gin.Engine, env *Env) {
 	// * WebSocket routes
 
 	router.GET("/ws", func(c *gin.Context) {
-		env.GetWS().Register(c.Writer, c.Request)
+		err := env.GetWS().Register(c.Writer, c.Request)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"message": fmt.Sprintf("Couldn't register connection: %v", err),
+			})
+			return
+		}
+
+		c.Status(http.StatusOK)
 	})
 }
