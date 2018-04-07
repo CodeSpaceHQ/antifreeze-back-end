@@ -98,8 +98,8 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (s *Server) PushTemp(userKey, deviceKey string, t env.Temp) {
-	mes := Temperature{
-		Sub:       "/device/history",
+	mes := TempMes{
+		Sub:       "/device/temp",
 		Op:        Add,
 		DeviceKey: deviceKey,
 		Temp:      t.Value,

@@ -7,12 +7,9 @@ const (
 )
 
 // support multiple message types
-type Message interface {
-	GetSub() string
-	GetOp() int
-}
+type Message interface{}
 
-type Temperature struct {
+type TempMes struct {
 	Sub       string
 	Op        int
 	DeviceKey string
@@ -20,5 +17,6 @@ type Temperature struct {
 	Date      int64
 }
 
-func (v Temperature) GetSub() string { return v.Sub }
-func (v Temperature) GetOp() int     { return v.Op }
+type ErrMes struct {
+	Message string
+}

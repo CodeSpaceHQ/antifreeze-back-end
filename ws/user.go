@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+
+	"github.com/NilsG-S/antifreeze-back-end/common/env"
 )
 
 const (
@@ -46,7 +48,7 @@ func (u *user) writeUser() {
 			if err != nil {
 				return
 			}
-			w.Write([]byte(mes.GetSub()))
+			w.Write([]byte(fmt.Sprint(mes)))
 
 			if err := w.Close(); err != nil {
 				return
@@ -60,7 +62,7 @@ func (u *user) writeUser() {
 	}
 }
 
-// TODO: will these ever need to send to other users?
+// Basically only for authentication
 func (u *user) readUser() {
 	// unregister if the user disconnects
 	defer func() {
@@ -76,13 +78,26 @@ func (u *user) readUser() {
 	})
 
 	for {
-		_, mes, err := u.conn.ReadMessage()
+		mType, mes, err := u.conn.ReadMessage()
 		if err != nil {
 			// Handles when client page is closed
 			break
 		}
 
-		fmt.Println(mes)
+		if mType == websocket.TextMessage {
+			var uClaims *env.UserClaims
+			uClaims, err = u.server.GetAuth().DecodeUser(string(mes))
+			if err != nil {
+				u.send <- ErrMes{
+					Message: fmt.Sprintf("Auth invalid: %v", err),
+				}
+				continue
+			}
+
+			// Set user key and authorize
+			u.key = uClaims.UserKey
+			u.server.auth <- u
+		}
 	}
 
 	return
