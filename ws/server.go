@@ -33,14 +33,19 @@ type Server struct {
 	usersByKey map[string]map[*user]bool
 	register   chan *user
 	unregister chan *user
+	auth       chan *user
+
+	env.Env
 }
 
-// TODO: This function may not be necessary
-func NewServer() *Server {
+// TODO: buffer these channels?
+func NewServer(xEnv env.Env) *Server {
 	return &Server{
 		usersByKey: make(map[string]map[*user]bool),
 		register:   make(chan *user),
 		unregister: make(chan *user),
+		auth:       make(chan *user),
+		Env:        xEnv,
 	}
 }
 
@@ -60,11 +65,14 @@ func (s *Server) RunServer() {
 				close(user.send)
 			}
 		}
+
+		// TODO: case for auth channel
 	}
 }
 
 func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
+	// TODO: return this error?
 	if err != nil {
 		log.Println(err)
 		return
@@ -72,13 +80,9 @@ func (s *Server) Register(w http.ResponseWriter, r *http.Request) {
 
 	user := &user{
 		server: s,
-		// TODO: This is a stopgap. Replace with authentication
-		// For now, you can only get this value by printing the contents of the device JWT
-		key:   "Eg8KBFVzZXIQgICAgIDkkQo",
-		perms: unauthed,
-		conn:  conn,
+		conn:   conn,
+		send:   make(chan Message, 256),
 		// channel of length 256
-		send: make(chan Message, 256),
 	}
 
 	s.register <- user
@@ -102,4 +106,4 @@ func (s *Server) PushTemp(userKey, deviceKey string, t env.Temp) {
 	}
 }
 
-// Add functions to inject temperatures, devices, etc. into the server.
+// TODO: add functions to inject temperatures, devices, etc. into the server.

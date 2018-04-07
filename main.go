@@ -25,6 +25,16 @@ import (
 func main() {
 	var err error
 
+	// Setting up server "environment"
+
+	env := &Env{
+		Secret: os.Getenv("ANTIFREEZE_SECRET"),
+	}
+
+	env.Auth = &aCommon.Model{Env: env}
+	env.Device = &dCommon.Model{Env: env}
+	env.User = &uCommon.Model{Env: env}
+
 	// Setting up logger
 
 	var out *os.File = os.Stdout
@@ -45,15 +55,14 @@ func main() {
 		}
 		defer out.Close()
 	}
-	logger := log.New(out, "", log.LstdFlags|log.Lshortfile)
+	env.Logger = log.New(out, "", log.LstdFlags|log.Lshortfile)
 
 	// Setting up datastore client
 
-	var cli *datastore.Client
 	ctx := context.Background()
 	// $DATASTORE_PROJECT_ID is used when second arg is empty
 	// $GOOGLE_APPLICATION_CREDENTIALS points to credentials JSON
-	cli, err = datastore.NewClient(ctx, "")
+	env.Client, err = datastore.NewClient(ctx, "")
 	if err != nil {
 		fmt.Printf("Couldn't create client: %v", err)
 		return
@@ -75,22 +84,8 @@ func main() {
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
-	server := ws.NewServer()
 
-	// Setting up server "environment"
-
-	env := &Env{
-		Client: cli,
-		Logger: logger,
-
-		WS: server,
-
-		Secret: os.Getenv("ANTIFREEZE_SECRET"),
-	}
-
-	env.Auth = &aCommon.Model{Env: env}
-	env.Device = &dCommon.Model{Env: env}
-	env.User = &uCommon.Model{Env: env}
+	env.WS = ws.NewServer(env)
 
 	// Setting up routes
 
@@ -98,7 +93,7 @@ func main() {
 
 	// Running Server
 
-	go server.RunServer()
+	go env.WS.RunServer()
 	err = httpServer.ListenAndServe()
 	if err != nil {
 		fmt.Printf("ListenAndServe error: %v", err)

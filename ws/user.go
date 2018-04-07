@@ -8,36 +8,11 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// TODO(NilsG-S): could permissions and subscriptions be their own structs?
-
-type perms struct {
-	authed bool
-}
-
-var (
-	authed *perms = &perms{
-		authed: true,
-	}
-	unauthed *perms = &perms{
-		authed: false,
-	}
-)
-
-// type subs struct {
-// 	userDevices   bool
-// 	devicesAlarm  bool
-// 	deviceHistory bool
-// }
-
 type user struct {
 	server *Server
 	key    string
-	perms  *perms
-	// used to decide whether to send information
-	// technically not necessay under the current proposal
-	// subs map[string]bool
-	conn *websocket.Conn
-	send chan Message
+	conn   *websocket.Conn
+	send   chan Message
 }
 
 func (u *user) writeUser() {
@@ -104,10 +79,4 @@ func (u *user) readUser() {
 	}
 
 	return
-}
-
-// ensures a given user has the right permissions
-func (v *user) checkAuth(req *perms) bool {
-	// TODO: do stuff
-	return true
 }
