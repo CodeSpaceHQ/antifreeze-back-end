@@ -1,22 +1,25 @@
 package ws
 
 const (
-	Add    int = 1
-	Remove int = 2
-	Update int = 3
+	OpAdd    int = 1
+	OpRemove int = 2
+	OpUpdate int = 3
+	OpError  int = 4
 )
 
 // support multiple message types
 type Message interface{}
 
 type TempMes struct {
-	Sub       string
-	Op        int
-	DeviceKey string
-	Temp      int
-	Date      int64
+	Sub       string `json:"sub"`
+	Op        int    `json:"op"`
+	DeviceKey string `json:"device_key"`
+	Temp      int    `json:"temp"`
+	Date      int64  `json:"date"`
 }
 
 type ErrMes struct {
-	Message string
+	Sub     string `json:"sub"`
+	Op      int    `json:"op"`
+	Message string `json:"message"`
 }

@@ -26,7 +26,6 @@ type user struct {
 }
 
 func (u *user) writeUser() {
-	// TODO: convert this to use JSON
 	ticker := time.NewTicker(pingInterval)
 
 	defer func() {
@@ -44,13 +43,9 @@ func (u *user) writeUser() {
 				return
 			}
 
-			w, err := u.conn.NextWriter(websocket.TextMessage)
+			err := u.conn.WriteJSON(mes)
 			if err != nil {
-				return
-			}
-			w.Write([]byte(fmt.Sprint(mes)))
-
-			if err := w.Close(); err != nil {
+				u.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
 		case <-ticker.C:
@@ -89,6 +84,8 @@ func (u *user) readUser() {
 			uClaims, err = u.server.GetAuth().DecodeUser(string(mes))
 			if err != nil {
 				u.send <- ErrMes{
+					Sub:     "/auth",
+					Op:      OpError,
 					Message: fmt.Sprintf("Auth invalid: %v", err),
 				}
 				continue
