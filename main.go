@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/datastore"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	aCommon "github.com/NilsG-S/antifreeze-back-end/common/auth"
@@ -74,6 +75,8 @@ func main() {
 
 	router.Use(gin.LoggerWithWriter(out))
 	router.Use(gin.Recovery())
+	// Allow all origins
+	router.Use(cors.Default())
 
 	// Setting up server
 
