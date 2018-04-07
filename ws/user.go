@@ -94,6 +94,10 @@ func (u *user) readUser() {
 			// Set user key and authorize
 			u.key = uClaims.UserKey
 			u.server.auth <- u
+			u.send <- SuccessMes{
+				Sub: "/auth",
+				Op:  OpSuccess,
+			}
 		}
 	}
 

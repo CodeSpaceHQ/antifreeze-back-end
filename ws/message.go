@@ -1,10 +1,11 @@
 package ws
 
 const (
-	OpAdd    int = 1
-	OpRemove int = 2
-	OpUpdate int = 3
-	OpError  int = 4
+	OpAdd     int = 1
+	OpRemove  int = 2
+	OpUpdate  int = 3
+	OpError   int = 4
+	OpSuccess int = 5
 )
 
 // support multiple message types
@@ -22,4 +23,9 @@ type ErrMes struct {
 	Sub     string `json:"sub"`
 	Op      int    `json:"op"`
 	Message string `json:"message"`
+}
+
+type SuccessMes struct {
+	Sub string `json:"sub"`
+	Op  int    `json:"op"`
 }
