@@ -35,7 +35,7 @@ type UserModel interface {
 // Methods for WS server
 type WS interface {
 	RunServer()
-	Register(w http.ResponseWriter, r *http.Request)
+	Register(w http.ResponseWriter, r *http.Request) error
 	PushTemp(userKey, deviceKey string, temp Temp)
 }
 

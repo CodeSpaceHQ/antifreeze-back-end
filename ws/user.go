@@ -2,47 +2,31 @@
 package ws
 
 import (
-	"log"
+	"fmt"
 	"time"
 
 	"github.com/gorilla/websocket"
+
+	"github.com/NilsG-S/antifreeze-back-end/common/env"
 )
 
-// TODO(NilsG-S): could permissions and subscriptions be their own structs?
-
-type perms struct {
-	authed bool
-}
-
-var (
-	authed *perms = &perms{
-		authed: true,
-	}
-	unauthed *perms = &perms{
-		authed: false,
-	}
+const (
+	writeWait = 10 * time.Second
+	// This should be just slightly shorter than pingWait
+	pingInterval = 30 * time.Second
+	// How long the server will wait for a pong response to a ping
+	pongWait = 40 * time.Second
 )
-
-// type subs struct {
-// 	userDevices   bool
-// 	devicesAlarm  bool
-// 	deviceHistory bool
-// }
 
 type user struct {
 	server *Server
 	key    string
-	perms  *perms
-	// used to decide whether to send information
-	// technically not necessay under the current proposal
-	// subs map[string]bool
-	conn *websocket.Conn
-	send chan Message
+	conn   *websocket.Conn
+	send   chan Message
 }
 
 func (u *user) writeUser() {
-	// TODO: convert this to use JSON
-	ticker := time.NewTicker(pingPeriod)
+	ticker := time.NewTicker(pingInterval)
 
 	defer func() {
 		ticker.Stop()
@@ -59,13 +43,9 @@ func (u *user) writeUser() {
 				return
 			}
 
-			w, err := u.conn.NextWriter(websocket.TextMessage)
+			err := u.conn.WriteJSON(mes)
 			if err != nil {
-				return
-			}
-			w.Write([]byte(mes.GetSub()))
-
-			if err := w.Close(); err != nil {
+				u.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
 		case <-ticker.C:
@@ -77,7 +57,7 @@ func (u *user) writeUser() {
 	}
 }
 
-// TODO: will these ever need to send to other users?
+// Basically only for authentication
 func (u *user) readUser() {
 	// unregister if the user disconnects
 	defer func() {
@@ -85,29 +65,41 @@ func (u *user) readUser() {
 		u.conn.Close()
 	}()
 
-	u.conn.SetReadLimit(maxMessageSize)
 	u.conn.SetReadDeadline(time.Now().Add(pongWait))
-	u.conn.SetPongHandler(func(string) error { u.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+	u.conn.SetPongHandler(func(appData string) error {
+		// Only wait so long for pong messages
+		u.conn.SetReadDeadline(time.Now().Add(pongWait))
+		return nil
+	})
 
 	for {
-		_, mes, err := u.conn.ReadMessage()
+		mType, mes, err := u.conn.ReadMessage()
 		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error: %v", err)
-			}
-
+			// Handles when client page is closed
 			break
 		}
 
-		// TODO: Make this applicable stuff other than Auth
-		log.Println(mes)
+		if mType == websocket.TextMessage {
+			var uClaims *env.UserClaims
+			uClaims, err = u.server.GetAuth().DecodeUser(string(mes))
+			if err != nil {
+				u.send <- ErrMes{
+					Sub:     "/auth",
+					Op:      OpError,
+					Message: fmt.Sprintf("Auth invalid: %v", err),
+				}
+				continue
+			}
+
+			// Set user key and authorize
+			u.key = uClaims.UserKey
+			u.server.auth <- u
+			u.send <- SuccessMes{
+				Sub: "/auth",
+				Op:  OpSuccess,
+			}
+		}
 	}
 
 	return
-}
-
-// ensures a given user has the right permissions
-func (v *user) checkAuth(req *perms) bool {
-	// TODO: do stuff
-	return true
 }
