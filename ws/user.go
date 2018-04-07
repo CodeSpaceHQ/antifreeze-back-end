@@ -2,10 +2,18 @@
 package ws
 
 import (
-	"log"
+	"fmt"
 	"time"
 
 	"github.com/gorilla/websocket"
+)
+
+const (
+	writeWait = 10 * time.Second
+	// This should be just slightly shorter than pingWait
+	pingInterval = 30 * time.Second
+	// How long the server will wait for a pong response to a ping
+	pongWait = 40 * time.Second
 )
 
 type user struct {
@@ -17,7 +25,7 @@ type user struct {
 
 func (u *user) writeUser() {
 	// TODO: convert this to use JSON
-	ticker := time.NewTicker(pingPeriod)
+	ticker := time.NewTicker(pingInterval)
 
 	defer func() {
 		ticker.Stop()
@@ -60,22 +68,21 @@ func (u *user) readUser() {
 		u.conn.Close()
 	}()
 
-	u.conn.SetReadLimit(maxMessageSize)
 	u.conn.SetReadDeadline(time.Now().Add(pongWait))
-	u.conn.SetPongHandler(func(string) error { u.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+	u.conn.SetPongHandler(func(appData string) error {
+		// Only wait so long for pong messages
+		u.conn.SetReadDeadline(time.Now().Add(pongWait))
+		return nil
+	})
 
 	for {
 		_, mes, err := u.conn.ReadMessage()
 		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error: %v", err)
-			}
-
+			// Handles when client page is closed
 			break
 		}
 
-		// TODO: Make this applicable stuff other than Auth
-		log.Println(mes)
+		fmt.Println(mes)
 	}
 
 	return

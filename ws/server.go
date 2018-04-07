@@ -3,24 +3,13 @@ package ws
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/websocket"
 
 	"github.com/NilsG-S/antifreeze-back-end/common/env"
 )
 
-const (
-	writeWait  = 10 * time.Second
-	pongWait   = 60 * time.Second
-	pingPeriod = (pongWait * 9) / 10
-	// TODO: This might not be relevant for JSON
-	maxMessageSize = 512
-)
-
 var (
-	newline  = []byte{'\n'}
-	space    = []byte{' '}
 	upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
