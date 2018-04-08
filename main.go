@@ -76,7 +76,13 @@ func main() {
 	router.Use(gin.LoggerWithWriter(out))
 	router.Use(gin.Recovery())
 	// Allow all origins
-	router.Use(cors.Default())
+	router.Use(cors.New(cors.Config{
+		AllowMethods:     []string{"GET", "PUT", "POST", "DELETE", "HEAD"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+		AllowAllOrigins:  true,
+		AllowCredentials: false,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	// Setting up server
 

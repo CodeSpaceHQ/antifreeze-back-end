@@ -3,8 +3,8 @@
 # This file is for Travis CI
 
 docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
-docker build -f deploy/docker/prod.Dockerfile -t nilsgs/antifreeze:latest -t nilsgs/antifreeze:6.1 .
-docker push nilsgs/antifreeze:6.1
+docker build -f deploy/docker/prod.Dockerfile -t nilsgs/antifreeze:latest -t nilsgs/antifreeze:6.2 .
+docker push nilsgs/antifreeze:6.2
 docker push nilsgs/antifreeze:latest
 
 echo $SERVICE_ACCOUNT | base64 --decode > $GOOGLE_APPLICATION_CREDENTIALS
