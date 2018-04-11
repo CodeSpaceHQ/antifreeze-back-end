@@ -83,7 +83,7 @@ func UserMiddleware(env env.Env) gin.HandlerFunc {
 		token := strings.Split(c.Request.Header.Get("Authorization"), " ")[1]
 		claims, err := model.DecodeUser(token)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"message": fmt.Sprintf("Invalid User token: %v", err),
 			})
 			return
@@ -102,7 +102,7 @@ func DeviceMiddleware(env env.Env) gin.HandlerFunc {
 		token := strings.Split(c.Request.Header.Get("Authorization"), " ")[1]
 		claims, err := model.DecodeDevice(token)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"message": fmt.Sprintf("Invalid Device token: %v", err),
 			})
 			return

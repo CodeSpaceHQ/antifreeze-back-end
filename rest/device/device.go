@@ -105,7 +105,7 @@ func Create(xEnv env.Env) func(c *gin.Context) {
 
 type TempInput struct {
 	Date int64 `json:"date" binding:"required"`
-	Temp int   `json:"temp" binding:"required"`
+	Temp *int  `json:"temp"`
 }
 
 func Temp(xEnv env.Env) func(c *gin.Context) {
@@ -126,6 +126,16 @@ func Temp(xEnv env.Env) func(c *gin.Context) {
 			return
 		}
 
+		// Check Temp
+
+		if json.Temp == nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"message": fmt.Sprint("Temp cannot be null"),
+			})
+			return
+		}
+		var temp int = *json.Temp
+
 		// Decoding JWT
 
 		dClaims := auth.GetDevice(c)
@@ -143,7 +153,7 @@ func Temp(xEnv env.Env) func(c *gin.Context) {
 
 		newT := env.Temp{
 			Date:  time.Unix(json.Date, 0),
-			Value: json.Temp,
+			Value: temp,
 		}
 
 		err = dModel.CreateTemp(c, dKey, newT)
