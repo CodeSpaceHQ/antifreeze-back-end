@@ -21,6 +21,7 @@ type AuthModel interface {
 type DeviceModel interface {
 	Create(*User, string, context.Context) (*Device, error)
 	CreateTemp(ctx context.Context, key *datastore.Key, temp Temp) error
+	Alarm(ctx context.Context, key *datastore.Key, alarm *int) error
 }
 
 // Methods for user model

@@ -73,3 +73,21 @@ func (m *Model) CreateTemp(ctx context.Context, k *datastore.Key, t env.Temp) er
 
 	return nil
 }
+
+func (m *Model) Alarm(ctx context.Context, key *datastore.Key, alarm *int) error {
+	var d env.Device
+
+	err := m.GetClient().Get(ctx, key, &d)
+	if err != nil {
+		return fmt.Errorf("Key didn't match an existing entity: %v", err)
+	}
+
+	d.Alarm = alarm
+
+	_, err = m.GetClient().Mutate(ctx, datastore.NewUpdate(d.Key, &d))
+	if err != nil {
+		return fmt.Errorf("Couldn't update alarm: %v", err)
+	}
+
+	return nil
+}
