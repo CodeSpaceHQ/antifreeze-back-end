@@ -74,6 +74,25 @@ func (m *Model) CreateTemp(ctx context.Context, k *datastore.Key, t env.Temp) er
 	return nil
 }
 
+func (m *Model) GetTemps(ctx context.Context, key *datastore.Key) ([]env.GetTempsJSON, error) {
+	var d env.Device
+
+	err := m.GetClient().Get(ctx, key, &d)
+	if err != nil {
+		return nil, fmt.Errorf("Key didn't match an existing entity: %v", err)
+	}
+
+	out := make([]env.GetTempsJSON, len(d.History))
+	for i, v := range d.History {
+		out[i] = env.GetTempsJSON{
+			Value: v.Value,
+			Date:  v.Date.Unix(),
+		}
+	}
+
+	return out, nil
+}
+
 func (m *Model) Alarm(ctx context.Context, key *datastore.Key, alarm *int) error {
 	var d env.Device
 

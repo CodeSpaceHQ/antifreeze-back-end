@@ -16,6 +16,7 @@ import (
 func Apply(route *gin.RouterGroup, xEnv env.Env) {
 	route.POST("/create", Create(xEnv))
 	route.POST("/temp", auth.DeviceMiddleware(xEnv), Temp(xEnv))
+	route.GET("/temp/:device", auth.UserMiddleware(xEnv), GetTemps(xEnv))
 	route.PUT("/alarm", auth.UserMiddleware(xEnv), Alarm(xEnv))
 }
 
@@ -168,6 +169,41 @@ func Temp(xEnv env.Env) func(c *gin.Context) {
 		xEnv.GetWS().PushTemp(dClaims.UserKey, dClaims.DeviceKey, newT)
 
 		c.Status(http.StatusOK)
+	}
+}
+
+func GetTemps(xEnv env.Env) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		var (
+			err    error
+			dModel env.DeviceModel = xEnv.GetDevice()
+		)
+
+		// Decoding Key
+
+		var dKey *datastore.Key
+		dKey, err = datastore.DecodeKey(c.Param("device"))
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"message": fmt.Sprintf("Invalid device key: %v", err),
+			})
+			return
+		}
+
+		// Updating alarm
+
+		var temps []env.GetTempsJSON
+		temps, err = dModel.GetTemps(c, dKey)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"message": fmt.Sprintf("Unable to get temps from DB: %v", err),
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"temps": temps,
+		})
 	}
 }
 
