@@ -16,6 +16,7 @@ import (
 func Apply(route *gin.RouterGroup, xEnv env.Env) {
 	route.POST("/create", Create(xEnv))
 	route.POST("/temp", auth.DeviceMiddleware(xEnv), Temp(xEnv))
+	route.PUT("/alarm", auth.UserMiddleware(xEnv), Alarm(xEnv))
 }
 
 type CreateInput struct {
@@ -165,6 +166,56 @@ func Temp(xEnv env.Env) func(c *gin.Context) {
 		}
 
 		xEnv.GetWS().PushTemp(dClaims.UserKey, dClaims.DeviceKey, newT)
+
+		c.Status(http.StatusOK)
+	}
+}
+
+type AlarmInput struct {
+	DeviceKey string `json:"device_key" binding:"required"`
+	Alarm     *int   `json:"alarm"`
+}
+
+func Alarm(xEnv env.Env) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		var (
+			err    error
+			json   AlarmInput
+			dModel env.DeviceModel = xEnv.GetDevice()
+		)
+
+		// Binding data
+
+		err = c.BindJSON(&json)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"message": fmt.Sprintf("Invald input: %v", err),
+			})
+			return
+		}
+
+		// Decoding JWT
+
+		var dKey *datastore.Key
+		dKey, err = datastore.DecodeKey(json.DeviceKey)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"message": fmt.Sprintf("Invalid device key: %v", err),
+			})
+			return
+		}
+
+		// Updating alarm
+
+		err = dModel.Alarm(c, dKey, json.Alarm)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"message": fmt.Sprintf("Unable to update alarm in DB: %v", err),
+			})
+			return
+		}
+
+		// TODO: Push updated alarm
 
 		c.Status(http.StatusOK)
 	}
