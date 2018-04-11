@@ -38,6 +38,7 @@ type WS interface {
 	RunServer()
 	Register(w http.ResponseWriter, r *http.Request) error
 	PushTemp(userKey, deviceKey string, temp Temp)
+	PushAlarm(userKey, deviceKey string, alarm *int)
 }
 
 type Env interface {

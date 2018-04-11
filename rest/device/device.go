@@ -196,6 +196,10 @@ func Alarm(xEnv env.Env) func(c *gin.Context) {
 
 		// Decoding JWT
 
+		uClaims := auth.GetUser(c)
+
+		// Decoding Key
+
 		var dKey *datastore.Key
 		dKey, err = datastore.DecodeKey(json.DeviceKey)
 		if err != nil {
@@ -215,7 +219,7 @@ func Alarm(xEnv env.Env) func(c *gin.Context) {
 			return
 		}
 
-		// TODO: Push updated alarm
+		xEnv.GetWS().PushAlarm(uClaims.UserKey, json.DeviceKey, json.Alarm)
 
 		c.Status(http.StatusOK)
 	}

@@ -19,6 +19,13 @@ type TempMes struct {
 	Date      int64  `json:"date"`
 }
 
+type AlarmMes struct {
+	Sub       string `json:"sub"`
+	Op        int    `json:"op"`
+	DeviceKey string `json:"device_key"`
+	Alarm     *int   `json:"alarm"`
+}
+
 type ErrMes struct {
 	Sub     string `json:"sub"`
 	Op      int    `json:"op"`

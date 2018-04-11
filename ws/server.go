@@ -115,4 +115,17 @@ func (s *Server) PushTemp(userKey, deviceKey string, t env.Temp) {
 	}
 }
 
+func (s *Server) PushAlarm(userKey, deviceKey string, alarm *int) {
+	mes := AlarmMes{
+		Sub:       "/device/alarm",
+		Op:        OpUpdate,
+		DeviceKey: deviceKey,
+		Alarm:     alarm,
+	}
+
+	for k, _ := range s.usersByKey[userKey] {
+		k.send <- mes
+	}
+}
+
 // TODO: add functions to inject temperatures, devices, etc. into the server.
