@@ -40,6 +40,7 @@ type WS interface {
 	Register(w http.ResponseWriter, r *http.Request) error
 	PushTemp(userKey, deviceKey string, temp Temp)
 	PushAlarm(userKey, deviceKey string, alarm *int)
+	PushDevice(userKey string, device *Device)
 }
 
 type Env interface {

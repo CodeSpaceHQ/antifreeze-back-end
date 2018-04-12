@@ -26,6 +26,14 @@ type AlarmMes struct {
 	Alarm     *int   `json:"alarm"`
 }
 
+type DeviceMes struct {
+	Sub       string `json:"sub"`
+	Op        int    `json:"op"`
+	DeviceKey string `json:"device_key"`
+	Name      string `json:"name"`
+	Alarm     *int   `json:"alarm"`
+}
+
 type ErrMes struct {
 	Sub     string `json:"sub"`
 	Op      int    `json:"op"`

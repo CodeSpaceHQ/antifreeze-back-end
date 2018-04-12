@@ -99,6 +99,7 @@ func Create(xEnv env.Env) func(c *gin.Context) {
 			return
 		}
 
+		xEnv.GetWS().PushDevice(u.Key.Encode(), d)
 		c.JSON(http.StatusOK, gin.H{
 			"token": tokenStr,
 		})
